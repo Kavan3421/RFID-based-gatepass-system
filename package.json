@@ -1,8 +1,0 @@
-{
-  "devDependencies": {
-    "cross-env": "^7.0.3"
-  },
-  "dependencies": {
-    "socket.io": "^4.8.1"
-  }
-}
