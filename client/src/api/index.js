@@ -1,12 +1,11 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://ssip-xv3o.onrender.com/api/", // Adjust to your Flask server URL
+  baseURL: "https://ssip-xv3o.onrender.com/api/",
 });
 
 // Register a new user
 export const registerUser = async (data) => {
-  console.log(data);
   const response = await API.post("/user/signup", data);
   return response;
 };

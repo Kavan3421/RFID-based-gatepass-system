@@ -15,7 +15,7 @@ def capture_image():
 
     # MongoDB connection setup
     try:
-        client = MongoClient("mongodb+srv://kavanpatel4321:ssip%40123456@rfid.s3i78.mongodb.net/")
+        client = MongoClient("mongodb+srv://kavanpatel4321:qqtbnrDPjmAWBeAH@rfid.s3i78.mongodb.net/")
         db = client["test"]  # Replace with your database name
     except Exception as e:
         print(f"Error connecting to MongoDB: {e}")

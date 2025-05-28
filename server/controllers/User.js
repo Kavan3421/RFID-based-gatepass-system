@@ -16,7 +16,6 @@ dotenv.config();
 export const UserRegister = async (req, res, next) => {
   try {
     const { name, email, vehicleNumber, enrollmentNumber, password } = req.body;
-    console.log(req.body);
 
     // Check for existing email
     const existingEmail = await User.findOne({ email }).exec();
@@ -49,7 +48,7 @@ export const UserRegister = async (req, res, next) => {
     const createdUser = await user.save();
 
     const token = jwt.sign({ id: createdUser._id }, process.env.JWT, {
-      expiresIn: "1y",
+      expiresIn: "24h",
     });
 
     console.log("Response Data:", { token, user: createdUser });
