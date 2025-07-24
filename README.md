@@ -99,5 +99,8 @@ Feel free to open issues and pull requests for enhancements!
 
 ---
 
-## 📬 Contact
-Connect with me on [LinkedIn](https://www.linkedin.com/in/kavan-patel-763319251/).
+## 👤 Created By
+
+**Kavan Patel**  
+🔗 [LinkedIn](https://www.linkedin.com/in/kavan-patel-763319251/)  
+🌐 [Portfolio](https://kavanpatel.me)
