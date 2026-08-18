@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 
+  SurveilEye Premium Design System (Light & Dark Themes)
+  Clean, high-contrast, professional styling
+*/
+
+:root {
+  --bg-body: #f8fafc;
+  --text-primary: #0f172a;
+}
+
+.dark {
+  --bg-body: #0b0f19;
+  --text-primary: #f8fafc;
+}
+
+body {
+  background-color: var(--bg-body);
+  color: var(--text-primary);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+  min-height: 100vh;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Image Sharpening Utilities */
+img {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* Glass & Card Utilities */
+.glass-panel {
+  @apply bg-white dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200 dark:border-slate-800/80 shadow-sm dark:shadow-none transition-all duration-200;
+}
+
+.glass-nav-bar {
+  @apply bg-white/90 dark:bg-slate-950/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/80 shadow-sm dark:shadow-none;
+}
+
+.glass-card-hover {
+  @apply hover:-translate-y-0.5 hover:shadow-md hover:border-blue-300 dark:hover:border-blue-500/40 transition-all duration-200;
+}
+
+.input-field {
+  @apply bg-white dark:bg-slate-950/80 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 dark:focus:border-blue-500 transition-all shadow-sm dark:shadow-none;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 dark:bg-slate-700 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-400 dark:bg-slate-600;
+}
