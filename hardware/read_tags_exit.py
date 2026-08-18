@@ -1,6 +1,17 @@
-import serial
-import pymongo
+import sys
 from datetime import datetime, timedelta
+
+try:
+    import serial
+except ImportError:
+    print("[ERROR] 'pyserial' module is missing. Please run: pip install -r requirements.txt")
+    sys.exit(1)
+
+try:
+    import pymongo
+except ImportError:
+    print("[ERROR] 'pymongo' module is missing. Please run: pip install -r requirements.txt")
+    sys.exit(1)
 
 # Configure RFID reader connection
 RFID_PORT = 'COM5'  # Replace with your RFID reader's serial port
@@ -31,7 +42,7 @@ def read_rfid_logs():
     """Read RFID data from the serial port."""
     try:
         with serial.Serial(RFID_PORT, BAUD_RATE, timeout=TIMEOUT) as ser:
-            print("Waiting for RFID scans...")
+            print(f"Connected to Exit RFID Reader on {RFID_PORT}. Waiting for scans...")
             while True:
                 rfid_data = ser.readline().decode('utf-8').strip().replace('\x00', '')  # Read and clean input
                 if rfid_data:
@@ -48,7 +59,8 @@ def read_rfid_logs():
                     else:
                         print(f"Duplicate scan ignored for RFID Tag: {rfid_data}")
     except serial.SerialException as e:
-        print(f"Error connecting to RFID reader: {e}")
+        print(f"[SERIAL ERROR] Could not access RFID reader on {RFID_PORT}: {e}")
+        print("Note: If testing without physical COM hardware, specify active serial port in script.")
     except KeyboardInterrupt:
         print("\nStopping RFID reader...")
 

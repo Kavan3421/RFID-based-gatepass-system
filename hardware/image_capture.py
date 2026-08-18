@@ -1,13 +1,18 @@
-import cv2
 import os
 import datetime
 import sys
 import time
 
 try:
+    import cv2
+except ImportError:
+    print("[ERROR] 'opencv-python' module is missing. Please run: pip install -r requirements.txt")
+    sys.exit(1)
+
+try:
     from pymongo import MongoClient
-except ModuleNotFoundError:
-    print("Error: pymongo module not found. Please install it using 'pip install pymongo'.")
+except ImportError:
+    print("[ERROR] 'pymongo' module is missing. Please run: pip install -r requirements.txt")
     sys.exit(1)
 
 def capture_image():
@@ -68,7 +73,7 @@ def capture_image():
             print("User verified. Capturing image...")
             
             # Define the directory to save images
-            save_dir = r"C:\Users\Kavan Patel\Desktop\SSIP\server\imagesOfEntryAndExit"
+            save_dir = os.path.join(os.path.dirname(__file__), "..", "server", "imagesOfEntryAndExit")
             os.makedirs(save_dir, exist_ok=True)
             
             # Create a timestamped filename
@@ -85,7 +90,7 @@ def capture_image():
                 cv2.imwrite(filepath, frame)
                 print(f"Image saved at {filepath}")
             else:
-                print("Failed to capture image")
+                print("Failed to capture image from camera")
 
             # Release camera properly
             cap.release()

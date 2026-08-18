@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import {
@@ -19,12 +20,14 @@ import {
   X,
   ShieldCheck,
   Radio,
+  Wifi,
 } from "lucide-react";
 
 export default function AdminUserManagementPage() {
   const router = useRouter();
   const { currentAdmin, adminToken } = useSelector((state) => state.admin);
 
+  const [mounted, setMounted] = useState(false);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -35,6 +38,10 @@ export default function AdminUserManagementPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showRfidModal, setShowRfidModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+
+  // Modal-specific Error and Success Messages
+  const [modalError, setModalError] = useState("");
+  const [modalSuccess, setModalSuccess] = useState("");
 
   // Add User Form State
   const [newUserForm, setNewUserForm] = useState({
@@ -49,6 +56,14 @@ export default function AdminUserManagementPage() {
   // Assign RFID Form State
   const [rfidInput, setRfidInput] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  // RFID Auto-Scan State
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanMessage, setScanMessage] = useState("");
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fetch all users
   const fetchUsers = async () => {
@@ -82,12 +97,82 @@ export default function AdminUserManagementPage() {
     fetchUsers();
   }, [currentAdmin, router]);
 
+  // Handle Live RFID Scan Trigger
+  const triggerRfidAutoScan = async (targetField) => {
+    setIsScanning(true);
+    setScanMessage("Launching RFID reader script...");
+    setModalError("");
+    setModalSuccess("");
+    const scanStartTime = Date.now();
+
+    try {
+      // 1. Launch read_tags_entry hardware script
+      await fetch("/api/admin/hardware", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${adminToken}`,
+        },
+        body: JSON.stringify({ script: "read_tags_entry", action: "start" }),
+      });
+
+      setScanMessage("Listening for physical card tap... Tap tag on scanner now.");
+
+      // 2. Poll scan endpoint every 1.2s for live tag
+      let attempts = 0;
+      const pollInterval = setInterval(async () => {
+        attempts += 1;
+        try {
+          const res = await fetch(`/api/admin/users/scan-rfid?since=${scanStartTime}`, {
+            headers: { Authorization: `Bearer ${adminToken}` },
+          });
+          const data = await res.json();
+
+          if (data.noScanner) {
+            clearInterval(pollInterval);
+            setIsScanning(false);
+            setScanMessage("");
+            setModalError(data.message || "No RFID scanner attached. Please connect RFID hardware scanner.");
+            return;
+          }
+
+          if (res.ok && data.success && data.rfid_tag) {
+            clearInterval(pollInterval);
+            setIsScanning(false);
+            setScanMessage("");
+
+            if (targetField === "newUser") {
+              setNewUserForm((prev) => ({ ...prev, rfid_tag: data.rfid_tag }));
+            } else if (targetField === "rfidInput") {
+              setRfidInput(data.rfid_tag);
+            }
+            setModalSuccess(`Scanned RFID Tag captured: ${data.rfid_tag}`);
+            return;
+          }
+        } catch (pollErr) {
+          console.error("Scan poll error:", pollErr);
+        }
+
+        if (attempts >= 10) {
+          clearInterval(pollInterval);
+          setIsScanning(false);
+          setScanMessage("");
+          setModalError("No RFID scanner attached or scan timed out. Please connect RFID scanner.");
+        }
+      }, 1200);
+    } catch (err) {
+      setIsScanning(false);
+      setScanMessage("");
+      setModalError("Failed to start hardware RFID reader process.");
+    }
+  };
+
   // Handle Register New User
   const handleAddUserSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    setError("");
-    setSuccess("");
+    setModalError("");
+    setModalSuccess("");
 
     try {
       const res = await fetch("/api/admin/users", {
@@ -116,7 +201,7 @@ export default function AdminUserManagementPage() {
       });
       fetchUsers();
     } catch (err) {
-      setError(err.message);
+      setModalError(err.message);
     } finally {
       setSubmitting(false);
     }
@@ -127,8 +212,8 @@ export default function AdminUserManagementPage() {
     e.preventDefault();
     if (!selectedUser) return;
     setSubmitting(true);
-    setError("");
-    setSuccess("");
+    setModalError("");
+    setModalSuccess("");
 
     try {
       const res = await fetch("/api/admin/users", {
@@ -154,7 +239,7 @@ export default function AdminUserManagementPage() {
       setRfidInput("");
       fetchUsers();
     } catch (err) {
-      setError(err.message);
+      setModalError(err.message);
     } finally {
       setSubmitting(false);
     }
@@ -218,6 +303,8 @@ export default function AdminUserManagementPage() {
           onClick={() => {
             setError("");
             setSuccess("");
+            setModalError("");
+            setModalSuccess("");
             setShowAddModal(true);
           }}
           className="py-3 px-5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 transition-all self-start md:self-auto"
@@ -260,7 +347,7 @@ export default function AdminUserManagementPage() {
         </div>
       </div>
 
-      {/* Status Messages */}
+      {/* Page Main Status Messages */}
       {error && (
         <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs flex items-center gap-2">
           <AlertCircle className="w-4 h-4 shrink-0" />
@@ -348,6 +435,8 @@ export default function AdminUserManagementPage() {
                             setSelectedUser(user);
                             setRfidInput(user.rfid_tag || "");
                             setError("");
+                            setModalError("");
+                            setModalSuccess("");
                             setShowRfidModal(true);
                           }}
                           className="py-1.5 px-3 rounded-xl bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 text-[11px] font-semibold flex items-center gap-1 transition-all"
@@ -373,187 +462,265 @@ export default function AdminUserManagementPage() {
         )}
       </div>
 
-      {/* Add New User Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-fadeIn">
-          <div className="w-full max-w-lg glass-panel rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl relative">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                  <UserPlus className="w-5 h-5" />
+      {/* Add New User Modal (Portaled directly to document.body for 100% clean full-screen backdrop) */}
+      {mounted &&
+        showAddModal &&
+        createPortal(
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
+            <div className="w-full max-w-lg glass-panel rounded-3xl p-6 sm:p-8 space-y-5 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                    <UserPlus className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Enroll New Resident User</h3>
+                    <p className="text-xs text-slate-500">Register account & vehicle for RFID gate system access</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Enroll New Resident User</h3>
-                  <p className="text-xs text-slate-500">Register account & vehicle for RFID gate system access</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleAddUserSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Full Name</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Kavan Patel"
-                  value={newUserForm.name}
-                  onChange={(e) => setNewUserForm({ ...newUserForm, name: e.target.value })}
-                  className="input-field w-full text-xs"
-                />
+                <button
+                  onClick={() => setShowAddModal(false)}
+                  className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Email Address</label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="user@example.com"
-                    value={newUserForm.email}
-                    onChange={(e) => setNewUserForm({ ...newUserForm, email: e.target.value })}
-                    className="input-field w-full text-xs"
-                  />
+              {/* Modal Inner Messages */}
+              {modalError && (
+                <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{modalError}</span>
                 </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Password</label>
-                  <input
-                    type="password"
-                    required
-                    placeholder="••••••••"
-                    value={newUserForm.password}
-                    onChange={(e) => setNewUserForm({ ...newUserForm, password: e.target.value })}
-                    className="input-field w-full text-xs"
-                  />
+              )}
+              {modalSuccess && (
+                <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  <span>{modalSuccess}</span>
                 </div>
-              </div>
+              )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <form onSubmit={handleAddUserSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Vehicle License No.</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Full Name</label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. GJ07KP0510"
-                    value={newUserForm.vehicleNumber}
-                    onChange={(e) => setNewUserForm({ ...newUserForm, vehicleNumber: e.target.value })}
+                    placeholder="e.g. Kavan Patel"
+                    value={newUserForm.name}
+                    onChange={(e) => setNewUserForm({ ...newUserForm, name: e.target.value })}
                     className="input-field w-full text-xs"
                   />
                 </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Email Address</label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="user@example.com"
+                      value={newUserForm.email}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, email: e.target.value })}
+                      className="input-field w-full text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Password</label>
+                    <input
+                      type="password"
+                      required
+                      placeholder="••••••••"
+                      value={newUserForm.password}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, password: e.target.value })}
+                      className="input-field w-full text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Vehicle License No.</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. GJ07KP0510"
+                      value={newUserForm.vehicleNumber}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, vehicleNumber: e.target.value })}
+                      className="input-field w-full text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Enrollment Number</label>
+                    <input
+                      type="number"
+                      required
+                      placeholder="e.g. 12202080701052"
+                      value={newUserForm.enrollmentNumber}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, enrollmentNumber: e.target.value })}
+                      className="input-field w-full text-xs"
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Enrollment Number</label>
-                  <input
-                    type="number"
-                    required
-                    placeholder="e.g. 12202080701052"
-                    value={newUserForm.enrollmentNumber}
-                    onChange={(e) => setNewUserForm({ ...newUserForm, enrollmentNumber: e.target.value })}
-                    className="input-field w-full text-xs"
-                  />
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    Assigned RFID Tag Code
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      placeholder="e.g. 0008664886"
+                      value={newUserForm.rfid_tag}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, rfid_tag: e.target.value })}
+                      className="input-field flex-1 text-xs font-mono font-bold text-cyan-600 dark:text-cyan-400"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => triggerRfidAutoScan("newUser")}
+                      disabled={isScanning}
+                      className="py-2.5 px-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm whitespace-nowrap disabled:opacity-60"
+                      title="Launch RFID script and auto-fill scanned tag code"
+                    >
+                      {isScanning ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Wifi className="w-3.5 h-3.5" />
+                      )}
+                      {isScanning ? "Scanning..." : "📡 Auto-Scan RFID"}
+                    </button>
+                  </div>
+                  {isScanning && (
+                    <p className="text-[11px] text-cyan-600 dark:text-cyan-400 font-medium mt-1.5 flex items-center gap-1 animate-pulse">
+                      <Radio className="w-3 h-3" /> {scanMessage || "Listening for physical card scan..."}
+                    </p>
+                  )}
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                  Assigned RFID Tag Code (Optional)
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. 0008664886 (Can be assigned later)"
-                  value={newUserForm.rfid_tag}
-                  onChange={(e) => setNewUserForm({ ...newUserForm, rfid_tag: e.target.value })}
-                  className="input-field w-full text-xs font-mono"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="py-2.5 px-5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-semibold flex items-center gap-2 shadow-md"
-                >
-                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save User Account"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Assign / Change RFID Modal */}
-      {showRfidModal && selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-fadeIn">
-          <div className="w-full max-w-md glass-panel rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl relative">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-2xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400">
-                  <Tag className="w-5 h-5" />
+                <div className="flex items-center justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddModal(false)}
+                    className="py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="py-2.5 px-5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-semibold flex items-center gap-2 shadow-md"
+                  >
+                    {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save User Account"}
+                  </button>
                 </div>
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Assign RFID Tag Code</h3>
-                  <p className="text-xs text-slate-500">For user: <strong className="text-slate-900 dark:text-slate-200">{selectedUser.name}</strong></p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowRfidModal(false)}
-                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              </form>
             </div>
+          </div>,
+          document.body
+        )}
 
-            <form onSubmit={handleAssignRfidSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                  RFID Hardware Tag Code
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. 0008664886"
-                  value={rfidInput}
-                  onChange={(e) => setRfidInput(e.target.value)}
-                  className="input-field w-full text-xs font-mono font-bold text-cyan-600 dark:text-cyan-400"
-                />
-                <p className="text-[11px] text-slate-500 mt-1.5">
-                  Scan the physical RFID card/sticker at the USB reader or type the exact hex/decimal tag number.
-                </p>
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-2">
+      {/* Assign / Change RFID Modal (Portaled directly to document.body for 100% clean full-screen backdrop) */}
+      {mounted &&
+        showRfidModal &&
+        selectedUser &&
+        createPortal(
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
+            <div className="w-full max-w-md glass-panel rounded-3xl p-6 sm:p-8 space-y-5 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-2xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400">
+                    <Tag className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Assign RFID Tag Code</h3>
+                    <p className="text-xs text-slate-500">For user: <strong className="text-slate-900 dark:text-slate-200">{selectedUser.name}</strong></p>
+                  </div>
+                </div>
                 <button
-                  type="button"
                   onClick={() => setShowRfidModal(false)}
-                  className="py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold"
+                  className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                 >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="py-2.5 px-5 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white text-xs font-semibold flex items-center gap-2 shadow-md"
-                >
-                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save RFID Tag"}
+                  <X className="w-5 h-5" />
                 </button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
+
+              {/* Modal Inner Messages */}
+              {modalError && (
+                <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{modalError}</span>
+                </div>
+              )}
+              {modalSuccess && (
+                <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  <span>{modalSuccess}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleAssignRfidSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    RFID Hardware Tag Code
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. 0008664886"
+                      value={rfidInput}
+                      onChange={(e) => setRfidInput(e.target.value)}
+                      className="input-field flex-1 text-xs font-mono font-bold text-cyan-600 dark:text-cyan-400"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => triggerRfidAutoScan("rfidInput")}
+                      disabled={isScanning}
+                      className="py-2.5 px-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm whitespace-nowrap disabled:opacity-60"
+                      title="Launch RFID script and auto-fill scanned tag code"
+                    >
+                      {isScanning ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Wifi className="w-3.5 h-3.5" />
+                      )}
+                      {isScanning ? "Scanning..." : "📡 Auto-Scan"}
+                    </button>
+                  </div>
+                  {isScanning ? (
+                    <p className="text-[11px] text-cyan-600 dark:text-cyan-400 font-medium mt-1.5 flex items-center gap-1 animate-pulse">
+                      <Radio className="w-3 h-3" /> {scanMessage || "Listening for physical card scan..."}
+                    </p>
+                  ) : (
+                    <p className="text-[11px] text-slate-500 mt-1.5">
+                      Click '📡 Auto-Scan' to capture live scan from connected physical RFID reader.
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowRfidModal(false)}
+                    className="py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="py-2.5 px-5 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white text-xs font-semibold flex items-center gap-2 shadow-md"
+                  >
+                    {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save RFID Tag"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import HardwareScriptRunner from "@/components/admin/HardwareScriptRunner";
 import { ShieldCheck, Activity, Users, ArrowUpRight, ArrowDownRight, RefreshCw, Radio } from "lucide-react";
 
 export default function AdminDashboardPage() {
@@ -56,7 +57,7 @@ export default function AdminDashboardPage() {
   const activeRfidCount = Object.keys(logsData).length;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {/* Admin Command Header */}
       <div className="glass-panel rounded-3xl p-6 sm:p-8 relative overflow-hidden border-cyan-500/30">
         <div className="absolute -top-24 -right-24 w-60 h-60 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -65,13 +66,13 @@ export default function AdminDashboardPage() {
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 text-xs font-semibold border border-cyan-500/20">
               <Radio className="w-3.5 h-3.5 animate-pulse text-cyan-600 dark:text-cyan-400" />
-              Live Surveillance Feed Active
+              Live Security Command Center
             </div>
             <h1 className="text-3xl font-extrabold text-slate-900 dark:text-slate-100">
               Security Command <span className="text-cyan-600 dark:text-cyan-400">Dashboard</span>
             </h1>
             <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm">
-              Administrator: <span className="text-slate-900 dark:text-slate-200 font-semibold">{currentAdmin.name || "Admin"}</span> • Active Gate Sensors: <span className="text-emerald-600 dark:text-emerald-400 font-mono font-bold">ONLINE</span>
+              Administrator: <span className="text-slate-900 dark:text-slate-200 font-semibold">{currentAdmin.name || "Admin"}</span> • Hardware Control Hub: <span className="text-emerald-600 dark:text-emerald-400 font-mono font-bold">ONLINE</span>
             </p>
           </div>
 
@@ -139,6 +140,9 @@ export default function AdminDashboardPage() {
           <p className="text-[11px] text-slate-500">MongoDB change stream active</p>
         </div>
       </div>
+
+      {/* Hardware Script Runner & Terminal Console */}
+      <HardwareScriptRunner />
 
       {/* Real-time Activity Stream */}
       <div className="glass-panel rounded-3xl p-6 space-y-4">
