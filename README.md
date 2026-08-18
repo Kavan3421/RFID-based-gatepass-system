@@ -159,6 +159,16 @@ This project is open-source and available under the **MIT License**.
 
 ## 🤝 Contributing & Contact
 
+<<<<<<< HEAD
 Contributions, issues, and feature requests are welcome!
 - Connect on [LinkedIn](https://www.linkedin.com/in/kavan-patel-763319251/)
 - Created by **Team SurveilEye**
+=======
+---
+
+## 👤 Created By
+
+**Kavan Patel**  
+🔗 [LinkedIn](https://www.linkedin.com/in/kavan-patel-763319251/)  
+🌐 [Portfolio](https://kavanpatel.me)
+>>>>>>> cc9a915abc52fa1bf5616cd8d9c0c9d2e395137c
