@@ -141,6 +141,10 @@ SSIP/
 
 ## 📸 Screenshots
 
+| User Dashboard | User History |
+|:---:|:---:|
+| ![User Dashboard](Screenshots/UserDashboard.jpg) | ![User History](Screenshots/UserHistory.jpg) |
+
 | Admin Command Center | RFID History Logs |
 |:---:|:---:|
 | ![Admin Dashboard](Screenshots/AdminDashboard.jpg) | ![Admin History Section](Screenshots/AdminHistory.jpg) |
@@ -157,7 +161,7 @@ This project is open-source and available under the **MIT License**.
 
 <<<<<<< HEAD
 Contributions, issues, and feature requests are welcome!
-- Connect on [LinkedIn](https://www.linkedin.com/in/kavan-patel-763319251/)
+- Connect on [LinkedIn](https://www.linkedin.com/in/kavan-patel-/)
 - Created by **Team SurveilEye**
 =======
 ---
@@ -165,6 +169,6 @@ Contributions, issues, and feature requests are welcome!
 ## 👤 Created By
 
 **Kavan Patel**  
-🔗 [LinkedIn](https://www.linkedin.com/in/kavan-patel-763319251/)  
-🌐 [Portfolio](https://kavanpatel.me)
+🔗 [LinkedIn](https://www.linkedin.com/in/kavan-patel-/)  
+🌐 [Portfolio](https://kavanpatel.in/)
 >>>>>>> cc9a915abc52fa1bf5616cd8d9c0c9d2e395137c
