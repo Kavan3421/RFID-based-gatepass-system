@@ -141,10 +141,6 @@ SSIP/
 
 ## 📸 Screenshots
 
-| User Dashboard | QR Visitor Pass |
-|:---:|:---:|
-| ![User Dashboard](Screenshots/UserDashboard.jpg) | ![QR Code Visitor Pass](Screenshots/GatePass.jpg) |
-
 | Admin Command Center | RFID History Logs |
 |:---:|:---:|
 | ![Admin Dashboard](Screenshots/AdminDashboard.jpg) | ![Admin History Section](Screenshots/AdminHistory.jpg) |
