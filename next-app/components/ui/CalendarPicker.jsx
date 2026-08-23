@@ -104,21 +104,21 @@ export default function CalendarPicker({ value, onChange }) {
           setIsOpen(!isOpen);
           setShowMonthGrid(false);
         }}
-        className="flex items-center gap-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-500 rounded-2xl px-4 py-2.5 text-xs font-semibold text-slate-900 dark:text-slate-100 shadow-sm transition-all"
+        className="flex items-center gap-2.5 glass-sheet hover:border-cyan-500/50 rounded-2xl px-4 py-2.5 text-xs font-semibold text-white shadow-md spring-press transition-all"
       >
-        <CalendarIcon className="w-4 h-4 text-blue-600 dark:text-cyan-400 shrink-0" />
-        <span className="font-mono">{value ? value : "Select Date"}</span>
+        <CalendarIcon className="w-4 h-4 text-cyan-400 shrink-0" />
+        <span className="font-mono tracking-wide">{value ? value : "Select Date"}</span>
       </button>
 
-      {/* Calendar Dropdown Modal - Responsive Positioning (left-0 on mobile, right-0 on desktop) */}
+      {/* Calendar Dropdown Modal - Liquid Glass Elevated */}
       {isOpen && (
-        <div className="absolute left-0 md:left-auto md:right-0 mt-2 w-72 sm:w-80 glass-panel rounded-3xl p-4 sm:p-5 shadow-2xl z-50 border border-slate-200 dark:border-slate-800 space-y-4 animate-fadeIn max-w-[calc(100vw-2rem)]">
+        <div className="absolute left-0 md:left-auto md:right-0 mt-2 w-72 sm:w-80 glass-floating rounded-3xl p-4 sm:p-5 shadow-2xl z-50 space-y-4 max-w-[calc(100vw-2rem)] animate-in fade-in zoom-in-95 duration-200">
           {/* Header Controls */}
-          <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+          <div className="flex items-center justify-between pb-3 border-b border-white/10">
             <button
               type="button"
               onClick={handlePrevMonth}
-              className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition-colors"
+              className="p-1.5 rounded-xl hover:bg-white/10 text-slate-300 transition-colors spring-press"
               title="Previous Month"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -129,14 +129,14 @@ export default function CalendarPicker({ value, onChange }) {
               <button
                 type="button"
                 onClick={() => setShowMonthGrid(!showMonthGrid)}
-                className="px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 text-slate-900 dark:text-slate-100 font-bold text-xs flex items-center gap-1 transition-colors"
+                className="px-3 py-1 rounded-xl glass-pill hover:bg-white/10 text-white font-bold text-xs flex items-center gap-1.5 transition-colors spring-press"
                 title="Click to choose Month"
               >
                 <span>{monthNames[viewMonth]}</span>
-                <span className="text-[10px] text-blue-500">▾</span>
+                <span className="text-[10px] text-cyan-400">▾</span>
               </button>
 
-              <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl px-1 py-0.5">
+              <div className="flex items-center glass-pill rounded-xl px-1.5 py-0.5">
                 <input
                   type="number"
                   min="1950"
@@ -146,7 +146,7 @@ export default function CalendarPicker({ value, onChange }) {
                     const val = parseInt(e.target.value);
                     if (!isNaN(val)) setViewYear(val);
                   }}
-                  className="w-14 bg-transparent border-0 text-center text-xs font-mono font-bold text-slate-900 dark:text-slate-100 focus:outline-none"
+                  className="w-14 bg-transparent border-0 text-center text-xs font-mono font-bold text-white focus:outline-none"
                   title="Type any Year"
                 />
               </div>
@@ -155,7 +155,7 @@ export default function CalendarPicker({ value, onChange }) {
             <button
               type="button"
               onClick={handleNextMonth}
-              className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition-colors"
+              className="p-1.5 rounded-xl hover:bg-white/10 text-slate-300 transition-colors spring-press"
               title="Next Month"
             >
               <ChevronRight className="w-4 h-4" />
@@ -179,10 +179,10 @@ export default function CalendarPicker({ value, onChange }) {
                         setViewMonth(idx);
                         setShowMonthGrid(false);
                       }}
-                      className={`py-2.5 rounded-2xl text-xs font-bold transition-all ${
+                      className={`py-2.5 rounded-2xl text-xs font-bold transition-all spring-press ${
                         isCurrent
-                          ? "bg-blue-600 text-white shadow-md shadow-blue-500/30"
-                          : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                          ? "btn-liquid-primary text-white font-bold"
+                          : "glass-pill text-slate-300 hover:text-white"
                       }`}
                     >
                       {m}
@@ -218,12 +218,12 @@ export default function CalendarPicker({ value, onChange }) {
                       key={dayNum}
                       type="button"
                       onClick={() => handleSelectDay(dayNum)}
-                      className={`h-8 w-8 mx-auto rounded-xl flex items-center justify-center text-xs font-semibold transition-all ${
+                      className={`h-8 w-8 mx-auto rounded-xl flex items-center justify-center text-xs font-semibold transition-all spring-press ${
                         isSelected
-                          ? "bg-blue-600 text-white shadow-md shadow-blue-500/30 font-bold"
+                          ? "btn-liquid-primary text-white font-extrabold"
                           : isToday
-                          ? "border border-blue-500 text-blue-600 dark:text-blue-400 font-bold"
-                          : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200"
+                          ? "border border-cyan-400 text-cyan-300 font-bold bg-cyan-500/10"
+                          : "hover:bg-white/10 text-slate-200"
                       }`}
                     >
                       {dayNum}
@@ -234,16 +234,16 @@ export default function CalendarPicker({ value, onChange }) {
             </>
           )}
 
-          {/* Clean Footer */}
-          <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs">
+          {/* Clean Footer with Gatify Branding */}
+          <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs">
             <button
               type="button"
               onClick={handleSetToday}
-              className="text-blue-600 dark:text-cyan-400 hover:underline font-semibold text-[11px] flex items-center gap-1.5"
+              className="text-cyan-400 hover:underline font-semibold text-[11px] flex items-center gap-1.5 spring-press"
             >
-              <RotateCcw className="w-3.5 h-3.5" /> Reset to Today
+              <RotateCcw className="w-3.5 h-3.5" /> Today
             </button>
-            <span className="text-[10px] text-slate-400 font-mono tracking-tight">SurveilEye Calendar</span>
+            <span className="text-[10px] text-slate-400 font-mono tracking-tight">Gatify Calendar</span>
           </div>
         </div>
       )}

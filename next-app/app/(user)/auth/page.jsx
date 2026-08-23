@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { loginSuccess } from "@/store/userSlice";
-import { Car, Lock, Mail, User, Hash, AlertCircle, Loader2, ArrowRight } from "lucide-react";
+import { Car, Lock, Mail, User, Hash, AlertCircle, Loader2, ArrowRight, QrCode } from "lucide-react";
 
 export default function UserAuthPage() {
   const router = useRouter();
@@ -15,14 +15,12 @@ export default function UserAuthPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Redirect to dashboard if user is already authenticated
   useEffect(() => {
     if (currentUser) {
       router.replace("/dashboard");
     }
   }, [currentUser, router]);
 
-  // Form inputs
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -68,39 +66,35 @@ export default function UserAuthPage() {
 
   return (
     <div className="flex items-center justify-center min-h-[82vh] py-8">
-      <div className="w-full max-w-md glass-panel rounded-3xl p-6 sm:p-8 relative overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xl">
+      <div className="w-full max-w-md glass-floating rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-2xl animate-in fade-in duration-200">
         {/* Header Branding */}
         <div className="text-center space-y-3 mb-6">
-          <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-sm mx-auto border border-slate-200 dark:border-slate-800 bg-white flex items-center justify-center">
-            <img
-              src="/logo.svg"
-              alt="SurveilEye Logo"
-              className="w-full h-full object-contain"
-            />
+          <div className="w-14 h-14 rounded-2xl bg-cyan-500/20 border border-cyan-400/40 mx-auto flex items-center justify-center text-cyan-300 shadow-lg shadow-cyan-500/20">
+            <QrCode className="w-7 h-7" />
           </div>
           <div>
-            <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">
-              {isSignUp ? "Register Vehicle Account" : "User Portal Access"}
+            <h1 className="text-2xl font-black text-white tracking-tight">
+              {isSignUp ? "Register Account" : "Gatify User Portal"}
             </h1>
-            <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">
+            <p className="text-slate-400 text-xs mt-1">
               {isSignUp
-                ? "Enroll your vehicle & student ID for automated RFID barrier entry"
+                ? "Enroll your resident credentials for gate access"
                 : "Sign in with your registered account credentials"}
             </p>
           </div>
         </div>
 
         {/* Tab Switcher */}
-        <div className="grid grid-cols-2 bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl mb-6 border border-slate-200 dark:border-slate-800">
+        <div className="grid grid-cols-2 glass-sheet p-1 rounded-2xl mb-6">
           <button
             type="button"
             onClick={() => {
               setIsSignUp(false);
               setError("");
             }}
-            className={`py-2.5 rounded-xl text-xs font-semibold transition-all ${!isSignUp
-                ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+            className={`py-2.5 rounded-xl text-xs font-bold transition-all spring-press ${!isSignUp
+                ? "btn-liquid-primary text-white shadow-sm"
+                : "text-slate-400 hover:text-white"
               }`}
           >
             Sign In
@@ -111,17 +105,17 @@ export default function UserAuthPage() {
               setIsSignUp(true);
               setError("");
             }}
-            className={`py-2.5 rounded-xl text-xs font-semibold transition-all ${isSignUp
-                ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+            className={`py-2.5 rounded-xl text-xs font-bold transition-all spring-press ${isSignUp
+                ? "btn-liquid-primary text-white shadow-sm"
+                : "text-slate-400 hover:text-white"
               }`}
           >
-            Register Vehicle
+            Register
           </button>
         </div>
 
         {error && (
-          <div className="mb-6 p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs flex items-center gap-2">
+          <div className="mb-6 p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2 font-bold">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{error}</span>
           </div>
@@ -130,11 +124,11 @@ export default function UserAuthPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {isSignUp && (
             <>
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-slate-300">
                   Full Name
                 </label>
-                <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-3.5 py-3 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
+                <div className="flex items-center gap-3 glass-input rounded-2xl px-3.5 py-3 focus-within:border-cyan-400 transition-all">
                   <User className="w-4 h-4 text-slate-400 shrink-0" />
                   <input
                     type="text"
@@ -143,16 +137,16 @@ export default function UserAuthPage() {
                     placeholder="e.g. Kavan Patel"
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full bg-transparent text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none"
+                    className="w-full bg-transparent text-xs text-white placeholder:text-slate-500 focus:outline-none"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-slate-300">
                   Vehicle License Number
                 </label>
-                <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-3.5 py-3 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
+                <div className="flex items-center gap-3 glass-input rounded-2xl px-3.5 py-3 focus-within:border-cyan-400 transition-all">
                   <Car className="w-4 h-4 text-slate-400 shrink-0" />
                   <input
                     type="text"
@@ -161,16 +155,16 @@ export default function UserAuthPage() {
                     placeholder="e.g. GJ07KP0510"
                     value={formData.vehicleNumber}
                     onChange={handleChange}
-                    className="w-full bg-transparent text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none"
+                    className="w-full bg-transparent text-xs text-white placeholder:text-slate-500 focus:outline-none uppercase font-mono"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                  Enrollment / Student ID
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-slate-300">
+                  Enrollment / Unit ID
                 </label>
-                <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-3.5 py-3 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
+                <div className="flex items-center gap-3 glass-input rounded-2xl px-3.5 py-3 focus-within:border-cyan-400 transition-all">
                   <Hash className="w-4 h-4 text-slate-400 shrink-0" />
                   <input
                     type="number"
@@ -179,18 +173,18 @@ export default function UserAuthPage() {
                     placeholder="e.g. 12202080701052"
                     value={formData.enrollmentNumber}
                     onChange={handleChange}
-                    className="w-full bg-transparent text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none"
+                    className="w-full bg-transparent text-xs text-white placeholder:text-slate-500 focus:outline-none font-mono"
                   />
                 </div>
               </div>
             </>
           )}
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold text-slate-300">
               Email Address
             </label>
-            <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-3.5 py-3 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
+            <div className="flex items-center gap-3 glass-input rounded-2xl px-3.5 py-3 focus-within:border-cyan-400 transition-all">
               <Mail className="w-4 h-4 text-slate-400 shrink-0" />
               <input
                 type="email"
@@ -199,16 +193,16 @@ export default function UserAuthPage() {
                 placeholder="name@company.com"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full bg-transparent text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none"
+                className="w-full bg-transparent text-xs text-white placeholder:text-slate-500 focus:outline-none"
               />
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold text-slate-300">
               Account Password
             </label>
-            <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-3.5 py-3 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
+            <div className="flex items-center gap-3 glass-input rounded-2xl px-3.5 py-3 focus-within:border-cyan-400 transition-all">
               <Lock className="w-4 h-4 text-slate-400 shrink-0" />
               <input
                 type="password"
@@ -217,7 +211,7 @@ export default function UserAuthPage() {
                 placeholder="••••••••"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full bg-transparent text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none"
+                className="w-full bg-transparent text-xs text-white placeholder:text-slate-500 focus:outline-none"
               />
             </div>
           </div>
@@ -225,13 +219,13 @@ export default function UserAuthPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 mt-2 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30 transition-all"
+            className="btn-liquid-primary w-full py-4 mt-2 rounded-2xl text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-xl shadow-cyan-600/30 spring-press disabled:opacity-50"
           >
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
               <>
-                <span>{isSignUp ? "Complete Account Registration" : "Sign In to Portal"}</span>
+                <span>{isSignUp ? "Complete Registration" : "Sign In to Gatify"}</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}

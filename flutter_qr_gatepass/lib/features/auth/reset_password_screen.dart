@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/api_service.dart';
+import '../../core/glass_widgets.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({Key? key}) : super(key: key);
@@ -20,7 +21,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   bool _isSuccess = false;
 
   Future<void> _handleRequestOtp() async {
-    final org = _orgController.text.trim();
+    final org = _orgController.text.trim().toUpperCase();
     final email = _emailController.text.trim();
     if (org.isEmpty || email.isEmpty) {
       setState(() {
@@ -37,7 +38,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
     try {
       final res = await ApiService.requestPasswordReset(
-        organizationCode: org.toUpperCase(),
+        organizationCode: org,
         usernameOrEmail: email,
       );
 
@@ -56,7 +57,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     } catch (e) {
       setState(() {
         _isSuccess = false;
-        _message = "Connection error. Please check server connection.";
+        _message = "Connection error. Please verify network or server status.";
       });
     } finally {
       setState(() => _isLoading = false);
@@ -90,7 +91,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       if (res['success'] == true) {
         setState(() {
           _isSuccess = true;
-          _message = res['message'] ?? "Password reset successfully! You can now log in.";
+          _message = res['message'] ?? "Password reset successfully! You can now sign in.";
         });
         Future.delayed(const Duration(seconds: 2), () {
           if (mounted) Navigator.pop(context);
@@ -114,132 +115,131 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: const Color(0xFF070A13),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E293B),
-        title: const Text("Reset Admin Password", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+        backgroundColor: const Color(0xFF0F172A).withOpacity(0.8),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          "Admin Password Reset",
+          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900),
+        ),
       ),
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Icon(Icons.mark_email_read, size: 54, color: Color(0xFF06B6D4)),
-                const SizedBox(height: 12),
-                const Text(
-                  "SMTP Email OTP Reset",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+      body: AmbientCanvasBackground(
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              child: FrostedGlassCard(
+                borderRadius: 28,
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 58,
+                        height: 58,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                          color: const Color(0xFF06B6D4).withOpacity(0.18),
+                          border: Border.all(color: const Color(0xFF06B6D4).withOpacity(0.4)),
+                        ),
+                        child: const Icon(Icons.mark_email_read, size: 30, color: Color(0xFF22D3EE)),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    const Text(
+                      "Gatify Security OTP",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900),
+                    ),
+                    const SizedBox(height: 6),
+                    const Text(
+                      "Enter your registered admin details to receive a 6-digit security OTP code via email.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
+                    ),
+                    const SizedBox(height: 24),
+
+                    if (_message != null) ...[
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: _isSuccess ? Colors.green.withOpacity(0.15) : Colors.red.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: _isSuccess ? Colors.greenAccent : Colors.redAccent),
+                        ),
+                        child: Text(
+                          _message!,
+                          style: TextStyle(
+                            color: _isSuccess ? Colors.greenAccent : Colors.redAccent,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
+                    if (_step == 1) ...[
+                      GlassTextField(
+                        controller: _orgController,
+                        labelText: "Organization ID",
+                        hintText: "e.g. GVS1024",
+                        textCapitalization: TextCapitalization.characters,
+                        prefixIcon: const Icon(Icons.business, color: Color(0xFF06B6D4), size: 20),
+                      ),
+                      const SizedBox(height: 14),
+
+                      GlassTextField(
+                        controller: _emailController,
+                        labelText: "Admin Username or Registered Email",
+                        hintText: "admin@organization.com",
+                        keyboardType: TextInputType.emailAddress,
+                        prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF06B6D4), size: 20),
+                      ),
+                      const SizedBox(height: 24),
+
+                      LiquidGlassButton(
+                        onPressed: _handleRequestOtp,
+                        isLoading: _isLoading,
+                        label: "Send 6-Digit OTP Email",
+                        icon: Icons.send,
+                      ),
+                    ] else ...[
+                      GlassTextField(
+                        controller: _otpController,
+                        labelText: "6-Digit Security Reset Code (OTP)",
+                        hintText: "Enter 6-digit OTP",
+                        keyboardType: TextInputType.number,
+                        prefixIcon: const Icon(Icons.security, color: Color(0xFF06B6D4), size: 20),
+                      ),
+                      const SizedBox(height: 14),
+
+                      GlassTextField(
+                        controller: _newPassController,
+                        labelText: "New Secret Password",
+                        hintText: "••••••••",
+                        isPassword: true,
+                        prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF06B6D4), size: 20),
+                      ),
+                      const SizedBox(height: 24),
+
+                      LiquidGlassButton(
+                        onPressed: _handleConfirmReset,
+                        isLoading: _isLoading,
+                        label: "Confirm & Update Password",
+                        icon: Icons.check,
+                      ),
+                    ],
+                  ],
                 ),
-                const SizedBox(height: 8),
-                const Text(
-                  "Enter your registered admin details to receive a 6-digit security OTP code via email.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
-                ),
-                const SizedBox(height: 24),
-
-                if (_message != null) ...[
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: _isSuccess ? Colors.green.withValues(alpha: 0.15) : Colors.red.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: _isSuccess ? Colors.green : Colors.red),
-                    ),
-                    child: Text(_message!, style: TextStyle(color: _isSuccess ? Colors.greenAccent : Colors.redAccent, fontSize: 12)),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-
-                if (_step == 1) ...[
-                  TextField(
-                    controller: _orgController,
-                    textCapitalization: TextCapitalization.characters,
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    decoration: InputDecoration(
-                      labelText: "Organization ID (e.g. GVS1024)",
-                      labelStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
-                      prefixIcon: const Icon(Icons.business, color: Color(0xFF06B6D4)),
-                      filled: true,
-                      fillColor: const Color(0xFF1E293B),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  TextField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      labelText: "Admin Username or Registered Email",
-                      labelStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
-                      prefixIcon: const Icon(Icons.email, color: Color(0xFF06B6D4)),
-                      filled: true,
-                      fillColor: const Color(0xFF1E293B),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  ElevatedButton(
-                    onPressed: _isLoading ? null : _handleRequestOtp,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0891B2),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    ),
-                    child: _isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text("Send 6-Digit OTP Email", style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
-                  ),
-                ] else ...[
-                  TextField(
-                    controller: _otpController,
-                    keyboardType: TextInputType.number,
-                    style: const TextStyle(color: Colors.cyanAccent, fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 4),
-                    decoration: InputDecoration(
-                      labelText: "Enter 6-Digit Security OTP Code",
-                      labelStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
-                      prefixIcon: const Icon(Icons.security, color: Color(0xFF06B6D4)),
-                      filled: true,
-                      fillColor: const Color(0xFF1E293B),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  TextField(
-                    controller: _newPassController,
-                    obscureText: true,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      labelText: "New Secret Password",
-                      labelStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
-                      prefixIcon: const Icon(Icons.lock, color: Color(0xFF06B6D4)),
-                      filled: true,
-                      fillColor: const Color(0xFF1E293B),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  ElevatedButton(
-                    onPressed: _isLoading ? null : _handleConfirmReset,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0891B2),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    ),
-                    child: _isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text("Confirm & Update Password", style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
-                  ),
-                ],
-              ],
+              ),
             ),
           ),
         ),

@@ -12,8 +12,8 @@ export function ThemeProvider({ children }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Read stored theme from localStorage on client mount
-    const savedTheme = localStorage.getItem("surveileye_theme");
+    // Read stored theme with backward-compatible fallback
+    const savedTheme = localStorage.getItem("gatify_theme") || localStorage.getItem("surveileye_theme");
     if (savedTheme === "light" || savedTheme === "dark") {
       setTheme(savedTheme);
     } else {
@@ -32,13 +32,13 @@ export function ThemeProvider({ children }) {
       root.classList.add("light");
       root.classList.remove("dark");
     }
-    localStorage.setItem("surveileye_theme", theme);
+    localStorage.setItem("gatify_theme", theme);
   }, [theme, mounted]);
 
   const toggleTheme = () => {
     setTheme((prev) => {
       const nextTheme = prev === "dark" ? "light" : "dark";
-      localStorage.setItem("surveileye_theme", nextTheme);
+      localStorage.setItem("gatify_theme", nextTheme);
       return nextTheme;
     });
   };

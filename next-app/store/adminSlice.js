@@ -13,14 +13,16 @@ export const adminSlice = createSlice({
       state.currentAdmin = action.payload.admin;
       state.adminToken = action.payload.token;
       if (typeof window !== "undefined") {
-        localStorage.setItem("surveileye_admin_token", action.payload.token);
-        localStorage.setItem("surveileye_admin_data", JSON.stringify(action.payload.admin));
+        localStorage.setItem("gatify_admin_token", action.payload.token);
+        localStorage.setItem("gatify_admin_data", JSON.stringify(action.payload.admin));
       }
     },
     adminLogout: (state) => {
       state.currentAdmin = null;
       state.adminToken = null;
       if (typeof window !== "undefined") {
+        localStorage.removeItem("gatify_admin_token");
+        localStorage.removeItem("gatify_admin_data");
         localStorage.removeItem("surveileye_admin_token");
         localStorage.removeItem("surveileye_admin_data");
       }

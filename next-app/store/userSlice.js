@@ -13,14 +13,16 @@ export const userSlice = createSlice({
       state.currentUser = action.payload.user;
       state.token = action.payload.token;
       if (typeof window !== "undefined") {
-        localStorage.setItem("surveileye_user_token", action.payload.token);
-        localStorage.setItem("surveileye_user_data", JSON.stringify(action.payload.user));
+        localStorage.setItem("gatify_user_token", action.payload.token);
+        localStorage.setItem("gatify_user_data", JSON.stringify(action.payload.user));
       }
     },
     logout: (state) => {
       state.currentUser = null;
       state.token = null;
       if (typeof window !== "undefined") {
+        localStorage.removeItem("gatify_user_token");
+        localStorage.removeItem("gatify_user_data");
         localStorage.removeItem("surveileye_user_token");
         localStorage.removeItem("surveileye_user_data");
       }

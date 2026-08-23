@@ -90,21 +90,21 @@ function ResetPasswordForm() {
   };
 
   return (
-    <div className="w-full max-w-md glass-panel rounded-3xl p-8 border border-slate-800 bg-slate-950/90 shadow-2xl space-y-6 text-left">
+    <div className="w-full max-w-md glass-floating rounded-3xl p-8 shadow-2xl space-y-6 text-left animate-in fade-in zoom-in-95 duration-200">
       <div className="text-center space-y-2">
-        <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 mx-auto flex items-center justify-center text-cyan-400">
-          <KeyRound className="w-6 h-6" />
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-600/30 border border-cyan-400/40 mx-auto flex items-center justify-center text-cyan-300 shadow-lg shadow-cyan-500/20">
+          <KeyRound className="w-7 h-7" />
         </div>
-        <h1 className="text-2xl font-bold text-white">Admin Password Reset</h1>
-        <p className="text-xs text-slate-400">Reset your admin account password via SMTP Email OTP.</p>
+        <h1 className="text-2xl font-black text-white tracking-tight">Admin Password Reset</h1>
+        <p className="text-xs text-slate-400">Reset your Gatify admin credentials via secure email OTP</p>
       </div>
 
       {message.text && (
         <div
-          className={`p-3.5 rounded-xl border text-xs font-semibold flex items-center gap-2 ${
+          className={`p-3.5 rounded-2xl border text-xs font-bold flex items-center gap-2 ${
             message.type === "success"
-              ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-300"
-              : "bg-red-500/20 border-red-500/40 text-red-300"
+              ? "glass-badge-emerald"
+              : "glass-badge-ruby"
           }`}
         >
           {message.type === "success" ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
@@ -114,7 +114,7 @@ function ResetPasswordForm() {
 
       {step === 1 ? (
         <form onSubmit={handleRequestCode} className="space-y-4">
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <label className="text-xs font-semibold text-slate-300">Organization ID</label>
             <input
               type="text"
@@ -122,11 +122,11 @@ function ResetPasswordForm() {
               placeholder="e.g. GVS1024"
               value={form.organizationCode}
               onChange={(e) => setForm({ ...form, organizationCode: e.target.value.toUpperCase() })}
-              className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm uppercase tracking-wider font-mono"
+              className="glass-input w-full px-4 py-3 rounded-2xl text-white text-sm uppercase tracking-wider font-mono focus:border-cyan-400"
             />
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <label className="text-xs font-semibold text-slate-300">Admin Email or Username</label>
             <input
               type="text"
@@ -134,14 +134,14 @@ function ResetPasswordForm() {
               placeholder="admin@organization.com"
               value={form.usernameOrEmail}
               onChange={(e) => setForm({ ...form, usernameOrEmail: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm"
+              className="glass-input w-full px-4 py-3 rounded-2xl text-white text-sm focus:border-cyan-400"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-cyan-600/30 transition-all disabled:opacity-50"
+            className="btn-liquid-primary w-full py-4 px-4 rounded-2xl text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-xl shadow-cyan-600/30 spring-press disabled:opacity-50"
           >
             {loading ? "Sending OTP..." : "Send Reset Code via Email"}
             <Mail className="w-4 h-4" />
@@ -149,34 +149,34 @@ function ResetPasswordForm() {
         </form>
       ) : (
         <form onSubmit={handleConfirmReset} className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-300">6-Digit Reset Code (OTP)</label>
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-300">6-Digit Security Reset Code (OTP)</label>
             <input
               type="text"
               required
-              placeholder="Enter 6-digit OTP code"
+              placeholder="Enter 6-digit OTP"
               value={form.resetToken}
               onChange={(e) => setForm({ ...form, resetToken: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-cyan-300 font-mono text-lg font-bold tracking-widest text-center"
+              className="glass-input w-full px-4 py-3.5 rounded-2xl text-cyan-300 font-mono text-xl font-black tracking-widest text-center focus:border-cyan-400"
             />
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-300">New Password</label>
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-300">New Secret Password</label>
             <input
               type="password"
               required
               placeholder="••••••••"
               value={form.newPassword}
               onChange={(e) => setForm({ ...form, newPassword: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm"
+              className="glass-input w-full px-4 py-3 rounded-2xl text-white text-sm focus:border-cyan-400"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-cyan-600/30 transition-all disabled:opacity-50"
+            className="btn-liquid-primary w-full py-4 px-4 rounded-2xl text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-xl shadow-cyan-600/30 spring-press disabled:opacity-50"
           >
             {loading ? "Updating..." : "Set New Password"}
             <CheckCircle2 className="w-4 h-4" />

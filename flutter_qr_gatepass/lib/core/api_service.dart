@@ -1,24 +1,67 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  // Default to Laptop LAN IP for physical Android devices on local Wi-Fi
-  static String defaultBaseUrl = "http://10.64.107.135:3000/api";
+  // Candidate default URLs
+  static const String lanEthernetUrl = "http://10.64.107.134:3000/api";
+  static const String lanWifiUrl = "http://10.86.110.227:3000/api";
+  static const String emulatorUrl = "http://10.0.2.2:3000/api";
+  static const String localhostUrl = "http://127.0.0.1:3000/api";
+
+  static String get platformDefaultUrl {
+    if (kIsWeb) return localhostUrl;
+    if (Platform.isAndroid) {
+      // In Android, default to LAN Wi-Fi or Ethernet
+      return lanEthernetUrl;
+    }
+    return localhostUrl;
+  }
 
   static Future<String> getBaseUrl() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('qrgp_base_url') ?? defaultBaseUrl;
+    final saved = prefs.getString('gatify_base_url') ?? prefs.getString('qrgp_base_url');
+    // If the saved URL is the outdated 10.64.107.135, migrate to current IP
+    if (saved == null || saved.contains('10.64.107.135')) {
+      return platformDefaultUrl;
+    }
+    return saved;
   }
 
   static Future<void> setBaseUrl(String url) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('qrgp_base_url', url);
+    String formatted = url.trim();
+    if (formatted.endsWith('/')) {
+      formatted = formatted.substring(0, formatted.length - 1);
+    }
+    if (!formatted.endsWith('/api')) {
+      formatted = '$formatted/api';
+    }
+    await prefs.setString('gatify_base_url', formatted);
+    await prefs.setString('qrgp_base_url', formatted);
+  }
+
+  /// Test connection to a given URL
+  static Future<bool> testConnection([String? candidateUrl]) async {
+    try {
+      final urlStr = candidateUrl != null ? candidateUrl.trim() : await getBaseUrl();
+      String testEndpoint = urlStr;
+      if (testEndpoint.endsWith('/api')) {
+        testEndpoint = testEndpoint.replaceAll(RegExp(r'/api$'), '');
+      }
+      final uri = Uri.parse(testEndpoint);
+      final res = await http.get(uri).timeout(const Duration(seconds: 3));
+      return res.statusCode == 200 || res.statusCode == 404;
+    } catch (_) {
+      return false;
+    }
   }
 
   static Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('qrgp_token');
+    return prefs.getString('gatify_token') ?? prefs.getString('qrgp_token');
   }
 
   static Future<Map<String, String>> _getHeaders() async {
@@ -45,7 +88,7 @@ class ApiService {
         'username': username,
         'password': password,
       }),
-    ).timeout(const Duration(seconds: 10));
+    ).timeout(const Duration(seconds: 8));
     return jsonDecode(response.body);
   }
 
@@ -64,7 +107,7 @@ class ApiService {
         'organizationCode': organizationCode,
         'usernameOrEmail': usernameOrEmail,
       }),
-    );
+    ).timeout(const Duration(seconds: 8));
     return jsonDecode(response.body);
   }
 
@@ -87,7 +130,7 @@ class ApiService {
         'resetToken': resetToken,
         'newPassword': newPassword,
       }),
-    );
+    ).timeout(const Duration(seconds: 8));
     return jsonDecode(response.body);
   }
 
@@ -106,7 +149,7 @@ class ApiService {
         'oldPassword': oldPassword,
         'newPassword': newPassword,
       }),
-    );
+    ).timeout(const Duration(seconds: 8));
     return jsonDecode(response.body);
   }
 
@@ -125,7 +168,7 @@ class ApiService {
         'username': username,
         'flatUnit': flatUnit,
       }),
-    );
+    ).timeout(const Duration(seconds: 8));
     return jsonDecode(response.body);
   }
 
@@ -134,7 +177,7 @@ class ApiService {
     final baseUrl = await getBaseUrl();
     final url = Uri.parse('$baseUrl/admin/members');
     final headers = await _getHeaders();
-    final response = await http.get(url, headers: headers);
+    final response = await http.get(url, headers: headers).timeout(const Duration(seconds: 8));
     return jsonDecode(response.body);
   }
 
@@ -157,7 +200,7 @@ class ApiService {
         'password': password,
         'role': role,
       }),
-    );
+    ).timeout(const Duration(seconds: 8));
     return jsonDecode(response.body);
   }
 
@@ -180,7 +223,7 @@ class ApiService {
         'phone': flatUnit,
         if (newPassword != null && newPassword.isNotEmpty) 'newPassword': newPassword,
       }),
-    );
+    ).timeout(const Duration(seconds: 8));
     return jsonDecode(response.body);
   }
 
@@ -189,7 +232,7 @@ class ApiService {
     final baseUrl = await getBaseUrl();
     final url = Uri.parse('$baseUrl/admin/members?userId=$userId');
     final headers = await _getHeaders();
-    final response = await http.delete(url, headers: headers);
+    final response = await http.delete(url, headers: headers).timeout(const Duration(seconds: 8));
     return jsonDecode(response.body);
   }
 
@@ -198,7 +241,7 @@ class ApiService {
     final baseUrl = await getBaseUrl();
     final url = Uri.parse('$baseUrl/admin/destinations');
     final headers = await _getHeaders();
-    final response = await http.get(url, headers: headers);
+    final response = await http.get(url, headers: headers).timeout(const Duration(seconds: 8));
     return jsonDecode(response.body);
   }
 
@@ -217,7 +260,7 @@ class ApiService {
         'groupLabel': groupLabel,
         'unitNumber': unitNumber,
       }),
-    );
+    ).timeout(const Duration(seconds: 8));
     return jsonDecode(response.body);
   }
 
@@ -241,20 +284,25 @@ class ApiService {
         'phone': phone,
         'destinations': destinations,
       }),
-    );
+    ).timeout(const Duration(seconds: 8));
     return jsonDecode(response.body);
   }
 
-  // 13. Gatekeeper: Scan QR Pass Code
-  static Future<Map<String, dynamic>> scanQrPass(String passCode) async {
+  // 13. Gatekeeper: Scan QR Pass Code (ENTRY or EXIT)
+  static Future<Map<String, dynamic>> scanQrPass(String passCode, {String scanType = 'ENTRY'}) async {
     final baseUrl = await getBaseUrl();
     final url = Uri.parse('$baseUrl/gatekeeper/scan');
     final headers = await _getHeaders();
     final response = await http.post(
       url,
       headers: headers,
-      body: jsonEncode({'passCode': passCode}),
-    );
+      body: jsonEncode({
+        'passCode': passCode,
+        'qr_token': passCode,
+        'scanType': scanType,
+        'scan_type': scanType,
+      }),
+    ).timeout(const Duration(seconds: 8));
     return jsonDecode(response.body);
   }
 
@@ -279,7 +327,7 @@ class ApiService {
         if (validDate != null) 'validDate': validDate,
         if (validFromIso != null) 'validFromIso': validFromIso,
       }),
-    );
+    ).timeout(const Duration(seconds: 8));
     return jsonDecode(response.body);
   }
 
@@ -288,7 +336,7 @@ class ApiService {
     final baseUrl = await getBaseUrl();
     final url = Uri.parse('$baseUrl/admin/dashboard');
     final headers = await _getHeaders();
-    final response = await http.get(url, headers: headers);
+    final response = await http.get(url, headers: headers).timeout(const Duration(seconds: 8));
     return jsonDecode(response.body);
   }
 
@@ -302,7 +350,7 @@ class ApiService {
     final query = 'fromDate=$fromDate&toDate=$toDate&entryType=$entryType';
     final url = Uri.parse('$baseUrl/admin/reports?$query');
     final headers = await _getHeaders();
-    final response = await http.get(url, headers: headers);
+    final response = await http.get(url, headers: headers).timeout(const Duration(seconds: 8));
     return jsonDecode(response.body);
   }
 
@@ -311,7 +359,20 @@ class ApiService {
     final baseUrl = await getBaseUrl();
     final url = Uri.parse('$baseUrl/member/guest-pass');
     final headers = await _getHeaders();
-    final response = await http.get(url, headers: headers);
+    final response = await http.get(url, headers: headers).timeout(const Duration(seconds: 8));
+    return jsonDecode(response.body);
+  }
+
+  // 18. Admin / Gatekeeper: Mark Entry Log as Exited
+  static Future<Map<String, dynamic>> markExit(String logId) async {
+    final baseUrl = await getBaseUrl();
+    final url = Uri.parse('$baseUrl/gatekeeper/exit');
+    final headers = await _getHeaders();
+    final response = await http.post(
+      url,
+      headers: headers,
+      body: jsonEncode({'logId': logId}),
+    ).timeout(const Duration(seconds: 8));
     return jsonDecode(response.body);
   }
 }

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
-import { QrCode, Plus, History, CheckCircle2, AlertCircle, Clock, LogOut, Copy, User, Download, Calendar } from "lucide-react";
+import { QrCode, Plus, History, CheckCircle2, AlertCircle, Clock, LogOut, Copy, User, Download, Calendar, Sparkles, Sun, Moon } from "lucide-react";
 
 // Format date to local string (e.g. "21 Aug 2026, 00:00")
 function formatLocalPassDate(isoString) {
@@ -12,7 +12,6 @@ function formatLocalPassDate(isoString) {
   if (isoString.includes("T00:00:00")) {
     const [datePart] = isoString.split("T");
     const [y, m, d] = datePart.split("-").map(Number);
-    const localDt = new Date(y, m - 1, d, 0, 0, 0);
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     return `${d} ${months[m - 1]} ${y}, 00:00`;
   }
@@ -20,8 +19,8 @@ function formatLocalPassDate(isoString) {
   const d = dt.getDate();
   const mStr = months[dt.getMonth()];
   const y = dt.getFullYear();
-  const hrs = dt.getHours().toString().padLeft(2, "0");
-  const mins = dt.getMinutes().toString().padLeft(2, "0");
+  const hrs = dt.getHours().toString().padStart(2, "0");
+  const mins = dt.getMinutes().toString().padStart(2, "0");
   return `${d} ${mStr} ${y}, ${hrs}:${mins}`;
 }
 
@@ -32,6 +31,10 @@ export default function MemberPage() {
   const [passes, setPasses] = useState([]);
   const [destinations, setDestinations] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [copiedToken, setCopiedToken] = useState(false);
+
+  // Theme State
+  const [theme, setTheme] = useState("dark");
 
   // Guest Pass Form State
   const todayStr = new Date().toISOString().split("T")[0];
@@ -47,8 +50,13 @@ export default function MemberPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("qrgp_user");
-    const token = localStorage.getItem("qrgp_token");
+    const savedTheme = localStorage.getItem("gatify_theme") || "dark";
+    setTheme(savedTheme);
+    document.documentElement.setAttribute("data-theme", savedTheme);
+    document.documentElement.classList.toggle("light", savedTheme === "light");
+
+    const storedUser = localStorage.getItem("gatify_user") || localStorage.getItem("qrgp_user");
+    const token = localStorage.getItem("gatify_token") || localStorage.getItem("qrgp_token");
     if (!storedUser || !token) {
       router.push("/login");
       return;
@@ -65,7 +73,7 @@ export default function MemberPage() {
 
   const fetchDestinations = async () => {
     try {
-      const token = localStorage.getItem("qrgp_token");
+      const token = localStorage.getItem("gatify_token") || localStorage.getItem("qrgp_token");
       const res = await fetch("/api/admin/destinations", {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -78,7 +86,7 @@ export default function MemberPage() {
 
   const fetchMyPasses = async () => {
     try {
-      const token = localStorage.getItem("qrgp_token");
+      const token = localStorage.getItem("gatify_token") || localStorage.getItem("qrgp_token");
       const res = await fetch("/api/member/guest-pass", {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -97,11 +105,12 @@ export default function MemberPage() {
     setQrDataUrl("");
 
     try {
-      const token = localStorage.getItem("qrgp_token");
+      const token = localStorage.getItem("gatify_token") || localStorage.getItem("qrgp_token");
 
-      // Construct Local Start of Day Date object
+      // Construct Local Start of Day Date object (or now if today)
       const [year, month, day] = form.validDate.split("-").map(Number);
-      const localValidFrom = new Date(year, month - 1, day, 0, 0, 0);
+      const isSelectedToday = form.validDate === todayStr;
+      const localValidFrom = isSelectedToday ? new Date() : new Date(year, month - 1, day, 0, 0, 0);
 
       const res = await fetch("/api/member/guest-pass", {
         method: "POST",
@@ -128,7 +137,7 @@ export default function MemberPage() {
         width: 320,
         margin: 2,
         color: {
-          dark: "#0F172A",
+          dark: "#070B14",
           light: "#FFFFFF",
         },
       });
@@ -147,7 +156,7 @@ export default function MemberPage() {
     const qrUrl = await QRCode.toDataURL(pass.pass_code, {
       width: 320,
       margin: 2,
-      color: { dark: "#0F172A", light: "#FFFFFF" },
+      color: { dark: "#070B14", light: "#FFFFFF" },
     });
 
     const canvas = document.createElement("canvas");
@@ -157,26 +166,28 @@ export default function MemberPage() {
 
     // Background Card
     const grad = ctx.createLinearGradient(0, 0, 500, 650);
-    grad.addColorStop(0, "#0F172A");
-    grad.addColorStop(1, "#1E293B");
+    grad.addColorStop(0, "#050811");
+    grad.addColorStop(1, "#0F172A");
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 500, 650);
 
+    // Cyan Specular Border
     ctx.strokeStyle = "#06B6D4";
-    ctx.lineWidth = 6;
-    ctx.strokeRect(12, 12, 476, 626);
+    ctx.lineWidth = 4;
+    ctx.strokeRect(14, 14, 472, 622);
 
+    // Gatify Header Branding
     ctx.fillStyle = "#06B6D4";
     ctx.font = "bold 14px sans-serif";
-    ctx.fillText("SURVEILEYE DIGITAL GATE PASS", 130, 55);
+    ctx.fillText("GATIFY DIGITAL GATE PASS", 135, 55);
 
     ctx.fillStyle = "#FFFFFF";
-    ctx.font = "extrabold 24px sans-serif";
-    ctx.fillText("VISITOR ACCESS PASS", 115, 95);
+    ctx.font = "extrabold 22px sans-serif";
+    ctx.fillText("VISITOR ACCESS CREDENTIAL", 85, 95);
 
     ctx.fillStyle = "#94A3B8";
     ctx.font = "14px sans-serif";
-    ctx.fillText(`Guest Name: ${pass.guest_name}`, 50, 140);
+    ctx.fillText(`Guest: ${pass.guest_name}`, 50, 140);
     ctx.fillText(`Valid Until: ${formatLocalPassDate(pass.valid_until)}`, 50, 168);
 
     const img = new Image();
@@ -190,50 +201,80 @@ export default function MemberPage() {
 
       ctx.fillStyle = "#06B6D4";
       ctx.font = "bold 22px monospace";
-      ctx.fillText(pass.pass_code, 120, 520);
+      ctx.fillText(pass.pass_code, 130, 520);
 
       ctx.fillStyle = "#94A3B8";
       ctx.font = "12px sans-serif";
-      ctx.fillText("Present this QR Code to Gatekeeper or Scanner for Instant Entry", 60, 560);
+      ctx.fillText("Present this QR Code to Gatify Scanner for Instant Entry", 75, 560);
 
       const link = document.createElement("a");
-      link.download = `QR-Pass-${pass.pass_code}.png`;
+      link.download = `Gatify-Pass-${pass.pass_code}.png`;
       link.href = canvas.toDataURL("image/png");
       link.click();
     };
   };
 
+  const handleCopyPassCode = (code) => {
+    navigator.clipboard.writeText(code);
+    setCopiedToken(true);
+    setTimeout(() => setCopiedToken(false), 2000);
+  };
+
   const handleLogout = () => {
+    localStorage.removeItem("gatify_token");
+    localStorage.removeItem("gatify_user");
     localStorage.removeItem("qrgp_token");
     localStorage.removeItem("qrgp_user");
     router.push("/login");
   };
 
+  const toggleTheme = () => {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    localStorage.setItem("gatify_theme", next);
+    document.documentElement.setAttribute("data-theme", next);
+    document.documentElement.classList.toggle("light", next === "light");
+  };
+
   if (!user) return null;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 space-y-6 text-left">
+    <div className="max-w-3xl mx-auto px-4 py-4 sm:py-8 space-y-6 text-left">
       {/* Header */}
-      <div className="glass-panel rounded-3xl p-6 border border-slate-800 bg-slate-950/80 flex items-center justify-between">
-        <div>
-          <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest block">MEMBER PORTAL</span>
-          <h1 className="text-xl font-bold text-white">Welcome, {user.username}</h1>
-          <p className="text-xs text-slate-400">Organization Code: <strong className="text-slate-200 font-mono">{user.organizationCode}</strong></p>
+      <div className="glass-floating rounded-3xl p-6 flex items-center justify-between shadow-2xl">
+        <div className="space-y-0.5">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-black text-cyan-400 uppercase tracking-widest block">MEMBER PORTAL</span>
+            <span className="text-slate-600">•</span>
+            <span className="text-xs text-slate-400 font-mono">ORG: {user.organizationCode}</span>
+          </div>
+          <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">Welcome, {user.username}</h1>
         </div>
-        <button
-          onClick={handleLogout}
-          className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 text-xs font-semibold flex items-center gap-1.5 transition-colors"
-        >
-          <LogOut className="w-4 h-4" /> Sign Out
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleTheme}
+            className="p-2.5 rounded-2xl glass-pill text-slate-300 hover:text-white spring-press flex items-center justify-center transition-colors"
+            title={`Switch to ${theme === 'dark' ? 'Light Crystal' : 'Dark Obsidian'} Mode`}
+          >
+            {theme === "dark" ? <Sun className="w-4 h-4 text-amber-400 animate-in spin-in-180 duration-300" /> : <Moon className="w-4 h-4 text-indigo-500 animate-in spin-in-180 duration-300" />}
+          </button>
+          <button
+            onClick={handleLogout}
+            className="px-3.5 py-2 rounded-2xl glass-pill text-slate-300 hover:text-rose-400 text-xs font-bold flex items-center gap-1.5 spring-press"
+          >
+            <LogOut className="w-4 h-4" /> <span className="hidden sm:inline">Sign Out</span>
+          </button>
+        </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex items-center gap-3 border-b border-slate-800 pb-2">
+      {/* Navigation Capsule Tabs */}
+      <div className="flex items-center gap-2.5 p-1.5 rounded-2xl glass-sheet max-w-fit">
         <button
           onClick={() => setActiveTab("CREATE")}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-            activeTab === "CREATE" ? "bg-cyan-600 text-white shadow-lg shadow-cyan-600/30" : "bg-slate-900 text-slate-400 hover:text-white"
+          className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all spring-press ${
+            activeTab === "CREATE"
+              ? "btn-liquid-primary text-white shadow-lg"
+              : "text-slate-400 hover:text-white"
           }`}
         >
           Generate Guest Pass
@@ -243,50 +284,67 @@ export default function MemberPage() {
             setActiveTab("HISTORY");
             fetchMyPasses();
           }}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-            activeTab === "HISTORY" ? "bg-cyan-600 text-white shadow-lg shadow-cyan-600/30" : "bg-slate-900 text-slate-400 hover:text-white"
+          className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all spring-press ${
+            activeTab === "HISTORY"
+              ? "btn-liquid-primary text-white shadow-lg"
+              : "text-slate-400 hover:text-white"
           }`}
         >
-          Guest History ({passes.length})
+          Pass History ({passes.length})
         </button>
       </div>
 
       {/* GENERATE GUEST PASS TAB */}
       {activeTab === "CREATE" && (
-        <div className="glass-panel rounded-3xl p-6 border border-slate-800 bg-slate-950/90 space-y-6">
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <QrCode className="w-5 h-5 text-cyan-400" /> Create Digital Visitor Pass
+        <div className="glass-floating rounded-3xl p-6 sm:p-8 space-y-6 animate-in fade-in zoom-in-95 duration-200">
+          <h2 className="text-lg font-black text-white flex items-center gap-2">
+            <QrCode className="w-5 h-5 text-cyan-400" />
+            <span>Create Digital Visitor Credential</span>
           </h2>
 
           {error && (
-            <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
+            <div className="p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-bold">
               {error}
             </div>
           )}
 
-          {/* Generated Pass Result Banner with REAL QR Image */}
+          {/* Generated Reflective Credential Badge */}
           {createdPass && (
-            <div className="p-6 rounded-3xl bg-slate-900 border-2 border-cyan-500/50 text-center space-y-4 shadow-2xl">
-              <div className="w-12 h-12 rounded-full bg-cyan-500/20 border border-cyan-500/40 mx-auto flex items-center justify-center text-cyan-300">
+            <div className="glass-qr-badge rounded-3xl p-6 sm:p-8 text-center space-y-5 animate-in fade-in zoom-in-95 duration-300">
+              <div className="w-12 h-12 rounded-2xl bg-cyan-500/20 border border-cyan-400/40 mx-auto flex items-center justify-center text-cyan-300 shadow-md">
                 <CheckCircle2 className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-extrabold text-white">Guest Pass Generated!</h3>
-              <p className="text-xs text-slate-300">Present this QR Code at the gate for instant entry verification:</p>
+              <div>
+                <h3 className="text-2xl font-black text-white tracking-tight">Guest Pass Active!</h3>
+                <p className="text-xs text-slate-300 mt-1">Present this QR Code credential at the security gate for automated verification:</p>
+              </div>
               
-              {/* REAL SCANNABLE QR CODE IMAGE ON SCREEN */}
+              {/* REAL SCANNABLE QR CODE IMAGE */}
               {qrDataUrl && (
                 <div className="py-2">
                   <img
                     src={qrDataUrl}
                     alt={`QR Code for ${createdPass.pass_code}`}
-                    className="w-64 h-64 mx-auto rounded-2xl border-4 border-cyan-500 bg-white p-3 shadow-2xl"
+                    className="w-60 h-60 mx-auto rounded-3xl border-4 border-cyan-400/80 bg-white p-3 shadow-2xl shadow-cyan-500/20"
                   />
                 </div>
               )}
 
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 text-2xl font-extrabold text-cyan-400 font-mono tracking-wider inline-block">
-                {createdPass.pass_code}
+              <div className="p-4 rounded-2xl glass-pill inline-flex items-center gap-3">
+                <span className="text-2xl font-black text-cyan-300 font-mono tracking-widest">{createdPass.pass_code}</span>
+                <button
+                  type="button"
+                  onClick={() => handleCopyPassCode(createdPass.pass_code)}
+                  className="p-2 rounded-xl hover:bg-white/10 text-cyan-400 spring-press transition-colors"
+                  title="Copy Token"
+                >
+                  <Copy className="w-4 h-4" />
+                </button>
               </div>
+
+              {copiedToken && (
+                <span className="block text-xs font-bold text-emerald-400 animate-pulse">Token copied to clipboard!</span>
+              )}
 
               <div className="text-xs text-slate-400 space-y-1">
                 <p>Guest Name: <strong className="text-white text-sm">{createdPass.guest_name}</strong></p>
@@ -297,16 +355,17 @@ export default function MemberPage() {
                 <button
                   type="button"
                   onClick={() => handleDownloadPassObj(createdPass)}
-                  className="px-6 py-3 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white font-extrabold text-sm flex items-center gap-2 transition-all shadow-xl shadow-cyan-600/30"
+                  className="btn-liquid-primary px-6 py-3.5 rounded-2xl text-white font-extrabold text-sm flex items-center gap-2 shadow-xl shadow-cyan-600/30 spring-press"
                 >
-                  <Download className="w-4 h-4" /> Download Real QR Pass Image
+                  <Download className="w-4 h-4" />
+                  <span>Download Gatify QR Pass Card</span>
                 </button>
               </div>
             </div>
           )}
 
           <form onSubmit={handleCreatePass} className="space-y-4">
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-300">Guest Full Name *</label>
               <input
                 type="text"
@@ -314,59 +373,59 @@ export default function MemberPage() {
                 placeholder="e.g. Rahul Sharma"
                 value={form.guestName}
                 onChange={(e) => setForm({ ...form, guestName: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-cyan-500"
+                className="glass-input w-full px-4 py-3 rounded-2xl text-white placeholder-slate-500 text-sm focus:border-cyan-400"
               />
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-300">Guest Mobile Number (Optional)</label>
               <input
                 type="tel"
                 placeholder="10-digit mobile number"
                 value={form.guestPhone}
                 onChange={(e) => setForm({ ...form, guestPhone: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-cyan-500"
+                className="glass-input w-full px-4 py-3 rounded-2xl text-white placeholder-slate-500 text-sm focus:border-cyan-400"
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-300">Destination (Flat / Dept) *</label>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-300">Destination (Flat / Unit) *</label>
                 <select
                   required
                   value={form.destinationId}
                   onChange={(e) => setForm({ ...form, destinationId: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-cyan-500"
+                  className="glass-input w-full px-4 py-3 rounded-2xl text-white text-sm focus:border-cyan-400"
                 >
-                  <option value="">Select Destination...</option>
+                  <option value="" className="bg-slate-900 text-white">Select Destination...</option>
                   {destinations.map((d) => (
-                    <option key={d.id} value={d.id}>{d.full_name}</option>
+                    <option key={d.id} value={d.id} className="bg-slate-900 text-white">{d.full_name}</option>
                   ))}
                 </select>
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-300">Valid Date *</label>
                 <input
                   type="date"
                   required
                   value={form.validDate}
                   onChange={(e) => setForm({ ...form, validDate: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-cyan-500"
+                  className="glass-input w-full px-4 py-3 rounded-2xl text-white text-sm focus:border-cyan-400"
                 />
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-300">Validity Duration *</label>
                 <select
                   value={form.durationHours}
                   onChange={(e) => setForm({ ...form, durationHours: parseInt(e.target.value, 10) })}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-cyan-500"
+                  className="glass-input w-full px-4 py-3 rounded-2xl text-white text-sm focus:border-cyan-400"
                 >
-                  <option value={4}>4 Hours</option>
-                  <option value={8}>8 Hours</option>
-                  <option value={12}>12 Hours (Default)</option>
-                  <option value={24}>24 Hours (Full Day)</option>
+                  <option value={4} className="bg-slate-900 text-white">4 Hours</option>
+                  <option value={8} className="bg-slate-900 text-white">8 Hours</option>
+                  <option value={12} className="bg-slate-900 text-white">12 Hours (Default)</option>
+                  <option value={24} className="bg-slate-900 text-white">24 Hours (Full Day)</option>
                 </select>
               </div>
             </div>
@@ -374,9 +433,9 @@ export default function MemberPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white font-extrabold text-base shadow-lg shadow-cyan-600/30 transition-all disabled:opacity-50"
+              className="btn-liquid-primary w-full py-4 rounded-2xl text-white font-extrabold text-base shadow-xl shadow-cyan-600/30 spring-press disabled:opacity-50 mt-2"
             >
-              {loading ? "Generating..." : "Generate Guest QR Pass"}
+              {loading ? "Generating Credential..." : "Generate Guest QR Pass"}
             </button>
           </form>
         </div>
@@ -384,14 +443,15 @@ export default function MemberPage() {
 
       {/* GUEST HISTORY TAB */}
       {activeTab === "HISTORY" && (
-        <div className="glass-panel rounded-3xl p-6 border border-slate-800 bg-slate-950/90 space-y-4">
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <History className="w-5 h-5 text-cyan-400" /> My Guest Pass History
+        <div className="glass-floating rounded-3xl p-6 sm:p-8 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+          <h2 className="text-lg font-black text-white flex items-center gap-2">
+            <History className="w-5 h-5 text-cyan-400" />
+            <span>My Guest Pass History</span>
           </h2>
 
-          <div className="space-y-3">
+          <div className="space-y-3 pt-2">
             {passes.length === 0 ? (
-              <div className="py-8 text-center text-slate-500 text-sm">No guest passes generated yet.</div>
+              <div className="py-12 text-center text-slate-400 text-sm">No guest passes generated yet.</div>
             ) : (
               passes.map((pass) => {
                 const now = new Date();
@@ -415,30 +475,29 @@ export default function MemberPage() {
                 const canDownload = computedStatus === "ACTIVE" || computedStatus === "NOT YET VALID";
 
                 return (
-                  <div key={pass.id} className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between text-xs">
+                  <div key={pass.id} className="glass-plank p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                     <div>
-                      <strong className="text-white text-sm block">{pass.guest_name}</strong>
+                      <strong className="text-white text-sm font-bold block">{pass.guest_name}</strong>
                       <span className="text-slate-400 font-mono text-[11px] block mt-0.5">Code: {pass.pass_code}</span>
                       <span className="text-slate-500 text-[10px]">Valid Until: {formatLocalPassDate(pass.valid_until)}</span>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                      <span className={`px-2.5 py-1 rounded-full font-bold text-[10px] ${
-                        computedStatus === 'ACTIVE' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' :
-                        computedStatus === 'NOT YET VALID' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' :
-                        computedStatus === 'USED' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' :
-                        'bg-red-500/20 text-red-400 border border-red-500/30'
+                    <div className="flex items-center gap-2.5 shrink-0">
+                      <span className={`px-2.5 py-1 rounded-full font-black text-[10px] ${
+                        computedStatus === 'ACTIVE' ? 'glass-badge-cyan' :
+                        computedStatus === 'NOT YET VALID' ? 'glass-badge-amber' :
+                        computedStatus === 'USED' ? 'glass-badge-emerald' :
+                        'glass-badge-ruby'
                       }`}>
                         {computedStatus}
                       </span>
 
-                      {/* SHOW DOWNLOAD BUTTON FOR ACTIVE & NOT YET VALID PASSES */}
                       {canDownload && (
                         <button
                           onClick={() => handleDownloadPassObj(pass)}
-                          className="px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-[11px] flex items-center gap-1 shadow-md"
+                          className="btn-liquid-secondary px-3 py-1.5 rounded-xl text-white font-bold text-[11px] flex items-center gap-1.5 spring-press"
                         >
-                          <Download className="w-3.5 h-3.5" /> Download QR
+                          <Download className="w-3.5 h-3.5 text-cyan-400" /> Download
                         </button>
                       )}
                     </div>

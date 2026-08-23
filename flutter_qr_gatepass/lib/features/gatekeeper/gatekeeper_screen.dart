@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/api_service.dart';
+import '../../core/glass_widgets.dart';
+import '../../core/theme_controller.dart';
 import '../auth/login_screen.dart';
 
 String formatPassDateLocal(String? isoStr) {
@@ -40,6 +42,7 @@ class GatekeeperScreen extends StatefulWidget {
 
 class _GatekeeperScreenState extends State<GatekeeperScreen> {
   int _activeView = 0; // 0: Home, 1: Scan, 2: Delivery
+  String _scanType = 'ENTRY'; // 'ENTRY' or 'EXIT'
 
   // Delivery Form State
   final _companyController = TextEditingController();
@@ -108,6 +111,7 @@ class _GatekeeperScreenState extends State<GatekeeperScreen> {
       );
 
       if (res['success'] == true) {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Delivery Entry Recorded Successfully!")),
         );
@@ -119,25 +123,26 @@ class _GatekeeperScreenState extends State<GatekeeperScreen> {
           _activeView = 0;
         });
       }
-    } catch (e) {
+    } catch (_) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Failed to log delivery.")),
       );
     } finally {
-      setState(() => _isSubmittingDelivery = false);
+      if (mounted) setState(() => _isSubmittingDelivery = false);
     }
   }
 
   Future<void> _submitScan() async {
-    final code = _qrTokenController.text.trim();
+    final code = _qrTokenController.text.trim().toUpperCase();
     if (code.isEmpty) return;
 
     try {
-      final res = await ApiService.scanQrPass(code);
+      final res = await ApiService.scanQrPass(code, scanType: _scanType);
       if (res['success'] == true) {
         setState(() {
-          _scanStatusCode = "VERIFIED";
-          _scanResult = "VERIFIED: ${res['pass']['guestName']} (${res['pass']['destination']})";
+          _scanStatusCode = res['statusCode'] ?? (_scanType == 'EXIT' ? "EXIT_RECORDED" : "VERIFIED");
+          _scanResult = res['message'] ?? (_scanType == 'EXIT' ? "EXIT LOGGED: Guest Checked Out" : "ENTRY APPROVED: ${res['pass']['guestName']} (${res['pass']['destination']})");
           _qrTokenController.clear();
         });
       } else {
@@ -152,7 +157,7 @@ class _GatekeeperScreenState extends State<GatekeeperScreen> {
           _scanResult = messageText;
         });
       }
-    } catch (e) {
+    } catch (_) {
       setState(() {
         _scanStatusCode = "INVALID";
         _scanResult = "Scan verification failed.";
@@ -169,345 +174,734 @@ class _GatekeeperScreenState extends State<GatekeeperScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = ThemeController.isDarkMode.value;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: isDark ? const Color(0xFF070A13) : const Color(0xFFF1F5F9),
+      extendBody: true,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E293B),
-        title: const Text("Gatekeeper Security Hub", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+        backgroundColor: (isDark ? const Color(0xFF0F172A) : Colors.white).withValues(alpha: isDark ? 0.85 : 0.88),
+        elevation: 0,
+        title: Row(
+          children: [
+            const Icon(Icons.shield, color: Color(0xFF06B6D4), size: 20),
+            const SizedBox(width: 8),
+            Text(
+              "Gatify Security Hub",
+              style: TextStyle(
+                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                fontSize: 16,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ],
+        ),
         actions: [
-          IconButton(icon: const Icon(Icons.logout, color: Colors.redAccent), onPressed: _logout),
+          IconButton(
+            icon: Icon(
+              isDark ? Icons.light_mode : Icons.dark_mode_outlined,
+              color: isDark ? Colors.amberAccent : const Color(0xFF4F46E5),
+              size: 20,
+            ),
+            tooltip: "Toggle Theme",
+            onPressed: () => ThemeController.toggleTheme(),
+          ),
+          IconButton(icon: const Icon(Icons.logout, color: Colors.redAccent, size: 20), onPressed: _logout),
         ],
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: _activeView == 0
-              ? _buildHomeMenu()
-              : _activeView == 1
-                  ? _buildScanView()
-                  : _buildDeliveryView(),
+      bottomNavigationBar: FloatingGlassDock(
+        currentIndex: _activeView == 0
+            ? 0
+            : _activeView == 1
+                ? (_scanType == 'ENTRY' ? 1 : 2)
+                : 3,
+        onTap: (index) {
+          setState(() {
+            if (index == 0) {
+              _activeView = 0;
+              _isCameraActive = false;
+            } else if (index == 1) {
+              _activeView = 1;
+              _scanType = 'ENTRY';
+            } else if (index == 2) {
+              _activeView = 1;
+              _scanType = 'EXIT';
+            } else if (index == 3) {
+              _activeView = 2;
+              _isCameraActive = false;
+            }
+          });
+        },
+        items: const [
+          DockItem(icon: Icons.dashboard_outlined, label: "Home"),
+          DockItem(icon: Icons.login, label: "Scan In", isPrimary: true),
+          DockItem(icon: Icons.logout, label: "Scan Out"),
+          DockItem(icon: Icons.local_shipping_outlined, label: "Delivery"),
+        ],
+      ),
+      body: AmbientCanvasBackground(
+        child: SafeArea(
+          bottom: false,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: _activeView == 0
+                ? _buildHomeMenu()
+                : _activeView == 1
+                    ? _buildScanView()
+                    : _buildDeliveryView(),
+          ),
         ),
       ),
     );
   }
 
   Widget _buildHomeMenu() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // Touch Button 1: Scan QR Pass
-        InkWell(
-          onTap: () => setState(() => _activeView = 1),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [Color(0xFF0891B2), Color(0xFF2563EB)]),
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [BoxShadow(color: const Color(0xFF0891B2).withValues(alpha: 0.3), blurRadius: 16)],
-            ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.qr_code_scanner, size: 48, color: Colors.white),
-                SizedBox(width: 16),
-                Text("SCAN GUEST QR", style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 24),
-
-        // Touch Button 2: Delivery Entry
-        InkWell(
-          onTap: () => setState(() => _activeView = 2),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1E293B),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: const Color(0xFF0891B2).withValues(alpha: 0.4), width: 2),
-            ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.local_shipping, size: 48, color: Color(0xFF06B6D4)),
-                SizedBox(width: 16),
-                Text("DELIVERY ENTRY", style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildScanView() {
-    Color bannerBg = Colors.red.withValues(alpha: 0.2);
-    Color bannerBorder = Colors.red;
-    Color bannerText = Colors.redAccent;
-
-    if (_scanStatusCode == "VERIFIED") {
-      bannerBg = Colors.green.withValues(alpha: 0.2);
-      bannerBorder = Colors.green;
-      bannerText = Colors.greenAccent;
-    } else if (_scanStatusCode == "NOT_YET_VALID") {
-      bannerBg = Colors.cyan.withValues(alpha: 0.2);
-      bannerBorder = Colors.cyan;
-      bannerText = Colors.cyanAccent;
-    } else if (_scanStatusCode == "ALREADY_USED") {
-      bannerBg = Colors.amber.withValues(alpha: 0.2);
-      bannerBorder = Colors.amber;
-      bannerText = Colors.amberAccent;
-    } else if (_scanStatusCode == "EXPIRED") {
-      bannerBg = Colors.orange.withValues(alpha: 0.2);
-      bannerBorder = Colors.orange;
-      bannerText = Colors.orangeAccent;
-    } else if (_scanStatusCode == "REVOKED") {
-      bannerBg = Colors.purple.withValues(alpha: 0.2);
-      bannerBorder = Colors.purple;
-      bannerText = Colors.purpleAccent;
-    }
-
     return SingleChildScrollView(
+      physics: const ClampingScrollPhysics(),
+      padding: const EdgeInsets.only(bottom: 90),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          TextButton.icon(
-            onPressed: () => setState(() {
-              _activeView = 0;
-              _isCameraActive = false;
-            }),
-            icon: const Icon(Icons.arrow_back, color: Color(0xFF94A3B8)),
-            label: const Text("Back to Main Menu", style: TextStyle(color: Color(0xFF94A3B8))),
+          const SizedBox(height: 6),
+          const Text(
+            "Select Gate Action",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -0.5,
+            ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 4),
+          const Text(
+            "Tap an action card below to start verification",
+            style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+          ),
+          const SizedBox(height: 16),
 
-          if (_scanResult != null) ...[
-            Container(
-              padding: const EdgeInsets.all(16),
+          // Massive Tactile Tile 1: Scan Guest Entry Pass
+          GestureDetector(
+            onTap: () => setState(() {
+              _scanType = 'ENTRY';
+              _activeView = 1;
+            }),
+            behavior: HitTestBehavior.opaque,
+            child: Container(
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: bannerBg,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: bannerBorder),
+                borderRadius: BorderRadius.circular(26),
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFF0E253A),
+                    Color(0xFF0F172A),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                border: Border.all(
+                  color: const Color(0xFF06B6D4).withValues(alpha: 0.6),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF06B6D4).withValues(alpha: 0.30),
+                    blurRadius: 20,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  Text(_scanStatusCode, style: TextStyle(color: bannerText, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1)),
-                  const SizedBox(height: 4),
-                  Text(_scanResult!, style: TextStyle(color: bannerText, fontSize: 15, fontWeight: FontWeight.bold)),
+                  Container(
+                    width: 58,
+                    height: 58,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(18),
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF06B6D4), Color(0xFF2563EB)],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF06B6D4).withValues(alpha: 0.50),
+                          blurRadius: 16,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(Icons.login, size: 30, color: Colors.white),
+                  ),
+                  const SizedBox(width: 16),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              "SCAN GUEST ENTRY",
+                              style: TextStyle(
+                                inherit: false,
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.2,
+                              ),
+                            ),
+                            SizedBox(width: 6),
+                            GlassPillChip(label: "IN", color: Color(0xFF06B6D4)),
+                          ],
+                        ),
+                        SizedBox(height: 3),
+                        Text(
+                          "Validate pass & permit entry",
+                          style: TextStyle(
+                            inherit: false,
+                            color: Color(0xFF22D3EE),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.arrow_forward_ios, color: Color(0xFF22D3EE), size: 16),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
-          ],
+          ),
+          const SizedBox(height: 14),
 
-          // REAL CAMERA VIEWFINDER BOX (MobileScanner)
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1E293B),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Column(
-              children: [
-                Container(
-                  height: 220,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0F172A),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: _isCameraActive ? Colors.greenAccent : const Color(0xFF06B6D4)),
+          // Massive Tactile Tile 2: Scan Guest Exit Pass
+          GestureDetector(
+            onTap: () => setState(() {
+              _scanType = 'EXIT';
+              _activeView = 1;
+            }),
+            behavior: HitTestBehavior.opaque,
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(26),
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFF2E1C1A),
+                    Color(0xFF0F172A),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                border: Border.all(
+                  color: const Color(0xFFF59E0B).withValues(alpha: 0.6),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFF59E0B).withValues(alpha: 0.25),
+                    blurRadius: 20,
+                    offset: const Offset(0, 6),
                   ),
-                  child: _isCameraActive
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: MobileScanner(
-                            onDetect: (capture) {
-                              final List<Barcode> barcodes = capture.barcodes;
-                              for (final barcode in barcodes) {
-                                final code = barcode.rawValue;
-                                if (code != null && code.isNotEmpty) {
-                                  _qrTokenController.text = code;
-                                  _submitScan();
-                                  setState(() => _isCameraActive = false);
-                                  break;
-                                }
-                              }
-                            },
-                          ),
-                        )
-                      : Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.camera_alt, size: 42, color: Color(0xFF06B6D4)),
-                              const SizedBox(height: 8),
-                              const Text("Camera Viewfinder Ready", style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12, fontWeight: FontWeight.bold)),
-                            ],
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 58,
+                    height: 58,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(18),
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFF59E0B), Color(0xFFE11D48)],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFF59E0B).withValues(alpha: 0.50),
+                          blurRadius: 16,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(Icons.logout, size: 30, color: Colors.white),
+                  ),
+                  const SizedBox(width: 16),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              "SCAN GUEST EXIT",
+                              style: TextStyle(
+                                inherit: false,
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.2,
+                              ),
+                            ),
+                            SizedBox(width: 6),
+                            GlassPillChip(label: "OUT", color: Color(0xFFF59E0B)),
+                          ],
+                        ),
+                        SizedBox(height: 3),
+                        Text(
+                          "Log visitor exit & checkout",
+                          style: TextStyle(
+                            inherit: false,
+                            color: Color(0xFFFCD34D),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                ),
-                const SizedBox(height: 12),
-                ElevatedButton.icon(
-                  onPressed: () => setState(() => _isCameraActive = !_isCameraActive),
-                  icon: Icon(_isCameraActive ? Icons.videocam_off : Icons.camera_front, color: Colors.white, size: 16),
-                  label: Text(_isCameraActive ? "Close Camera View" : "Open Live Camera Viewfinder", style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-                  style: ElevatedButton.styleFrom(backgroundColor: _isCameraActive ? Colors.redAccent : const Color(0xFF0891B2)),
-                ),
-              ],
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.arrow_forward_ios, color: Color(0xFFFCD34D), size: 16),
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
 
-          TextField(
-            controller: _qrTokenController,
-            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-            decoration: InputDecoration(
-              labelText: "Enter or Scan QR Token",
-              labelStyle: const TextStyle(color: Color(0xFF94A3B8)),
-              filled: true,
-              fillColor: const Color(0xFF1E293B),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+          // Massive Tactile Tile 3: Delivery Entry
+          GestureDetector(
+            onTap: () => setState(() => _activeView = 2),
+            behavior: HitTestBehavior.opaque,
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(26),
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFF1E2442),
+                    Color(0xFF0F172A),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                border: Border.all(
+                  color: const Color(0xFF3B82F6).withValues(alpha: 0.6),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF3B82F6).withValues(alpha: 0.25),
+                    blurRadius: 20,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 58,
+                    height: 58,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(18),
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF3B82F6), Color(0xFF4F46E5)],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF3B82F6).withValues(alpha: 0.50),
+                          blurRadius: 16,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(Icons.local_shipping, size: 30, color: Colors.white),
+                  ),
+                  const SizedBox(width: 16),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "RAPID DELIVERY ENTRY",
+                          style: TextStyle(
+                            inherit: false,
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                        SizedBox(height: 3),
+                        Text(
+                          "Fast 2-tap multi-unit package logger",
+                          style: TextStyle(
+                            inherit: false,
+                            color: Color(0xFF93C5FD),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.arrow_forward_ios, color: Color(0xFF93C5FD), size: 16),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-
-          ElevatedButton(
-            onPressed: _submitScan,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0891B2),
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            ),
-            child: const Text("Validate QR Pass", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDeliveryView() {
+  Widget _buildScanView() {
+    final isExit = _scanType == 'EXIT';
+    Color bannerBg = Colors.red.withValues(alpha: 0.20);
+    Color bannerBorder = Colors.red.withValues(alpha: 0.55);
+    Color bannerText = Colors.redAccent;
+
+    if (_scanStatusCode == "VERIFIED" || _scanStatusCode == "EXIT_RECORDED") {
+      bannerBg = Colors.green.withValues(alpha: 0.20);
+      bannerBorder = Colors.green.withValues(alpha: 0.55);
+      bannerText = Colors.greenAccent;
+    } else if (_scanStatusCode == "NOT_YET_VALID") {
+      bannerBg = Colors.cyan.withValues(alpha: 0.20);
+      bannerBorder = Colors.cyan.withValues(alpha: 0.55);
+      bannerText = Colors.cyanAccent;
+    } else if (_scanStatusCode == "ALREADY_USED" || _scanStatusCode == "ALREADY_EXITED" || _scanStatusCode == "ALREADY_INSIDE") {
+      bannerBg = Colors.amber.withValues(alpha: 0.20);
+      bannerBorder = Colors.amber.withValues(alpha: 0.55);
+      bannerText = Colors.amberAccent;
+    }
+
     return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          TextButton.icon(
-            onPressed: () => setState(() => _activeView = 0),
-            icon: const Icon(Icons.arrow_back, color: Color(0xFF94A3B8)),
-            label: const Text("Back to Main Menu", style: TextStyle(color: Color(0xFF94A3B8))),
-          ),
-          const SizedBox(height: 8),
-
-          TextField(
-            controller: _companyController,
-            style: const TextStyle(color: Colors.white),
-            decoration: InputDecoration(
-              labelText: "Delivery Company (Amazon, Zomato...) *",
-              labelStyle: const TextStyle(color: Color(0xFF94A3B8)),
-              filled: true,
-              fillColor: const Color(0xFF1E293B),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          TextField(
-            controller: _personController,
-            style: const TextStyle(color: Colors.white),
-            decoration: InputDecoration(
-              labelText: "Delivery Agent Name *",
-              labelStyle: const TextStyle(color: Color(0xFF94A3B8)),
-              filled: true,
-              fillColor: const Color(0xFF1E293B),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          TextField(
-            controller: _phoneController,
-            keyboardType: TextInputType.phone,
-            style: const TextStyle(color: Colors.white),
-            decoration: InputDecoration(
-              labelText: "Agent Mobile Number (Optional)",
-              labelStyle: const TextStyle(color: Color(0xFF94A3B8)),
-              filled: true,
-              fillColor: const Color(0xFF1E293B),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Wing + Flat Addition Box
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1E293B),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      physics: const ClampingScrollPhysics(),
+      padding: const EdgeInsets.only(bottom: 90),
+      child: FrostedGlassCard(
+        borderRadius: 28,
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text("Add Destination Flats *", style: TextStyle(color: Color(0xFF06B6D4), fontWeight: FontWeight.bold)),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      flex: 1,
-                      child: TextField(
-                        controller: _wingController,
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                        decoration: const InputDecoration(hintText: "Wing (A)", hintStyle: TextStyle(color: Color(0xFF64748B))),
+                TextButton.icon(
+                  onPressed: () => setState(() {
+                    _activeView = 0;
+                    _isCameraActive = false;
+                  }),
+                  icon: const Icon(Icons.arrow_back, color: Color(0xFF94A3B8), size: 18),
+                  label: const Text("Main Menu", style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12, fontWeight: FontWeight.bold)),
+                ),
+                // Mode Toggle Switch
+                Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                  ),
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => setState(() => _scanType = 'ENTRY'),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: !isExit ? const Color(0xFF06B6D4) : Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            "Scan In",
+                            style: TextStyle(
+                              color: !isExit ? Colors.white : const Color(0xFF94A3B8),
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      flex: 2,
-                      child: TextField(
-                        controller: _flatController,
-                        keyboardType: TextInputType.number,
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                        decoration: const InputDecoration(hintText: "Flat # (203)", hintStyle: TextStyle(color: Color(0xFF64748B))),
+                      GestureDetector(
+                        onTap: () => setState(() => _scanType = 'EXIT'),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: isExit ? const Color(0xFFF59E0B) : Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            "Scan Out",
+                            style: TextStyle(
+                              color: isExit ? Colors.white : const Color(0xFF94A3B8),
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                       ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+
+            // Active Mode Header Indicator
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: (isExit ? const Color(0xFFF59E0B) : const Color(0xFF06B6D4)).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: (isExit ? const Color(0xFFF59E0B) : const Color(0xFF06B6D4)).withValues(alpha: 0.35)),
+              ),
+              child: Row(
+                children: [
+                  Icon(isExit ? Icons.logout : Icons.login, color: isExit ? const Color(0xFFF59E0B) : const Color(0xFF06B6D4), size: 16),
+                  const SizedBox(width: 8),
+                  Text(
+                    isExit ? "MODE: SCANNING GUEST EXIT & CHECKOUT" : "MODE: SCANNING GUEST ENTRY",
+                    style: TextStyle(
+                      color: isExit ? const Color(0xFFFCD34D) : const Color(0xFF22D3EE),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.2,
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.add_circle, color: Color(0xFF06B6D4), size: 32),
-                      onPressed: _addDestination,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            if (_scanResult != null) ...[
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: bannerBg,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: bannerBorder, width: 1.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: bannerBorder.withValues(alpha: 0.2),
+                      blurRadius: 16,
                     ),
                   ],
                 ),
-                if (_selectedDestinations.isNotEmpty) ...[
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(_scanStatusCode, style: TextStyle(color: bannerText, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                    const SizedBox(height: 4),
+                    Text(_scanResult!, style: TextStyle(color: bannerText, fontSize: 14, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            // LIVE CAMERA HUD
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(22),
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF0F172A).withValues(alpha: 0.85),
+                    const Color(0xFF131E33).withValues(alpha: 0.75),
+                  ],
+                ),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    height: 220,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF050811),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color: _isCameraActive
+                            ? Colors.greenAccent
+                            : isExit
+                                ? const Color(0xFFF59E0B)
+                                : const Color(0xFF06B6D4),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: _isCameraActive
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(18),
+                            child: MobileScanner(
+                              onDetect: (capture) {
+                                final List<Barcode> barcodes = capture.barcodes;
+                                for (final barcode in barcodes) {
+                                  final code = barcode.rawValue;
+                                  if (code != null && code.isNotEmpty) {
+                                    _qrTokenController.text = code;
+                                    _submitScan();
+                                    setState(() => _isCameraActive = false);
+                                    break;
+                                  }
+                                }
+                              },
+                            ),
+                          )
+                        : Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(isExit ? Icons.logout : Icons.camera_alt, size: 44, color: isExit ? const Color(0xFFF59E0B) : const Color(0xFF06B6D4)),
+                                const SizedBox(height: 8),
+                                Text("Live ${isExit ? 'Exit' : 'Entry'} Camera Viewfinder", style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          ),
+                  ),
                   const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    children: _selectedDestinations.map((dest) {
-                      return Chip(
-                        backgroundColor: const Color(0xFF0891B2).withValues(alpha: 0.3),
-                        label: Text(dest, style: const TextStyle(color: Colors.cyanAccent, fontWeight: FontWeight.bold)),
-                        deleteIcon: const Icon(Icons.close, size: 14, color: Colors.cyanAccent),
-                        onDeleted: () => setState(() => _selectedDestinations.remove(dest)),
-                      );
-                    }).toList(),
+                  LiquidGlassButton(
+                    onPressed: () => setState(() => _isCameraActive = !_isCameraActive),
+                    gradient: _isCameraActive
+                        ? const LinearGradient(colors: [Colors.redAccent, Colors.red])
+                        : isExit
+                            ? const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFE11D48)])
+                            : null,
+                    height: 48,
+                    label: _isCameraActive ? "Close Camera View" : "Start Live ${isExit ? 'Exit' : 'Entry'} Auto-Scanner",
+                    icon: _isCameraActive ? Icons.videocam_off : Icons.camera_alt,
                   ),
                 ],
-              ],
+              ),
             ),
-          ),
-          const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
-          ElevatedButton(
-            onPressed: _isSubmittingDelivery ? null : _submitDelivery,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0891B2),
-              padding: const EdgeInsets.symmetric(vertical: 18),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            GlassTextField(
+              controller: _qrTokenController,
+              labelText: "Manual QR Token Input",
+              hintText: "Enter pass code (e.g. QGP-8A9F21B3)",
+              textCapitalization: TextCapitalization.characters,
+              prefixIcon: Icon(Icons.qr_code, color: isExit ? const Color(0xFFF59E0B) : const Color(0xFF06B6D4), size: 20),
             ),
-            child: _isSubmittingDelivery
-                ? const CircularProgressIndicator(color: Colors.white)
-                : const Text("RECORD DELIVERY ENTRY", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800)),
-          ),
-        ],
+            const SizedBox(height: 16),
+
+            LiquidGlassButton(
+              onPressed: _submitScan,
+              gradient: isExit ? const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFE11D48)]) : null,
+              label: isExit ? "Validate & Record Exit" : "Validate & Permit Entry",
+              icon: isExit ? Icons.door_front_door_outlined : Icons.check_circle_outline,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDeliveryView() {
+    return SingleChildScrollView(
+      physics: const ClampingScrollPhysics(),
+      padding: const EdgeInsets.only(bottom: 90),
+      child: FrostedGlassCard(
+        borderRadius: 28,
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () => setState(() => _activeView = 0),
+                icon: const Icon(Icons.arrow_back, color: Color(0xFF94A3B8), size: 18),
+                label: const Text("Back to Main Menu", style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12, fontWeight: FontWeight.bold)),
+              ),
+            ),
+            const SizedBox(height: 8),
+
+            GlassTextField(
+              controller: _companyController,
+              labelText: "Delivery Company *",
+              hintText: "Amazon, Zomato, Swiggy, Flipkart...",
+              prefixIcon: const Icon(Icons.business, color: Color(0xFF06B6D4), size: 20),
+            ),
+            const SizedBox(height: 12),
+
+            GlassTextField(
+              controller: _personController,
+              labelText: "Delivery Agent Name *",
+              hintText: "Agent Name",
+              prefixIcon: const Icon(Icons.person_outline, color: Color(0xFF06B6D4), size: 20),
+            ),
+            const SizedBox(height: 12),
+
+            GlassTextField(
+              controller: _phoneController,
+              labelText: "Agent Mobile Number (Optional)",
+              hintText: "10-digit mobile number",
+              keyboardType: TextInputType.phone,
+              prefixIcon: const Icon(Icons.phone_outlined, color: Color(0xFF06B6D4), size: 20),
+            ),
+            const SizedBox(height: 16),
+
+            // Wing + Flat Addition Box
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF0F172A).withValues(alpha: 0.85),
+                    const Color(0xFF131E33).withValues(alpha: 0.75),
+                  ],
+                ),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Add Destination Flats *", style: TextStyle(color: Color(0xFF06B6D4), fontWeight: FontWeight.bold, fontSize: 12)),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 1,
+                        child: GlassTextField(
+                          controller: _wingController,
+                          hintText: "Wing (A)",
+                          textCapitalization: TextCapitalization.characters,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        flex: 2,
+                        child: GlassTextField(
+                          controller: _flatController,
+                          hintText: "Flat # (101)",
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: const Icon(Icons.add_circle, color: Color(0xFF06B6D4), size: 38),
+                        onPressed: _addDestination,
+                      ),
+                    ],
+                  ),
+                  if (_selectedDestinations.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _selectedDestinations.map((dest) {
+                        return GlassPillChip(
+                          label: dest,
+                          onDeleted: () => setState(() => _selectedDestinations.remove(dest)),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            LiquidGlassButton(
+              onPressed: _isSubmittingDelivery ? null : _submitDelivery,
+              isLoading: _isSubmittingDelivery,
+              label: "RECORD DELIVERY ENTRY",
+              icon: Icons.check_circle,
+            ),
+          ],
+        ),
       ),
     );
   }

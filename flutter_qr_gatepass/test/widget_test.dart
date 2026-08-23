@@ -3,7 +3,7 @@ import 'package:flutter_qr_gatepass/main.dart';
 
 void main() {
   testWidgets('App load smoke test', (WidgetTester tester) async {
-    await tester.pumpWidget(const QrGatePassApp());
-    expect(find.byType(QrGatePassApp), findsOneWidget);
+    await tester.pumpWidget(const GatifyApp());
+    expect(find.byType(GatifyApp), findsOneWidget);
   });
 }

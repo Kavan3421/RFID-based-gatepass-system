@@ -85,7 +85,7 @@ export default function UserGatepassPage() {
     }
   };
 
-  // Merge QR code image with logo.png at center onto HTML5 canvas for download
+  // Merge QR code image onto canvas for download
   const handleDownloadQR = () => {
     if (!qrCodeImage) return;
 
@@ -105,14 +105,13 @@ export default function UserGatepassPage() {
       // 1. Draw base QR code
       ctx.drawImage(qrImg, 0, 0, canvas.width, canvas.height);
 
-      // 2. Draw centered logo.png
+      // 2. Draw centered logo
       logoImg.src = "/logo.png";
       logoImg.onload = () => {
         const logoSize = canvas.width * 0.22;
         const logoX = (canvas.width - logoSize) / 2;
         const logoY = (canvas.height - logoSize) / 2;
 
-        // White background badge under logo for scan reliability
         ctx.fillStyle = "#FFFFFF";
         ctx.beginPath();
         ctx.roundRect(logoX - 4, logoY - 4, logoSize + 8, logoSize + 8, 12);
@@ -123,7 +122,7 @@ export default function UserGatepassPage() {
         // Download output PNG
         const link = document.createElement("a");
         link.href = canvas.toDataURL("image/png");
-        link.download = `SurveilEye_Gatepass_${Date.now()}.png`;
+        link.download = `Gatify_Gatepass_${Date.now()}.png`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -134,47 +133,47 @@ export default function UserGatepassPage() {
   if (!currentUser) return null;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-200">
       {/* Header */}
       <div className="text-center space-y-2">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-panel border-blue-500/30 text-blue-600 dark:text-blue-400 text-xs font-semibold">
-          <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-          Visitor & Guest Access Generator
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-pill text-cyan-400 text-xs font-semibold">
+          <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+          Visitor Access Generator
         </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100">
+        <h1 className="text-2xl sm:text-3xl font-black text-white">
           Generate Visitor Gate Pass & QR
         </h1>
-        <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm max-w-lg mx-auto">
+        <p className="text-slate-400 text-xs sm:text-sm max-w-lg mx-auto">
           Submit visitor permission details to generate a scannable QR gate pass for barrier entry.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
         {/* Pass Details Form */}
-        <div className="glass-panel rounded-3xl p-6 sm:p-8 space-y-6">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+        <div className="glass-floating rounded-3xl p-6 sm:p-8 space-y-6">
+          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <FileText className="w-5 h-5 text-cyan-400" />
             Gate Pass Details
           </h2>
 
           {error && (
-            <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs flex items-center gap-2">
+            <div className="p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           {successMsg && (
-            <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center gap-2">
+            <div className="p-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 shrink-0" />
               <span>{successMsg}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                Purpose / Reason for Visit
+            <div className="space-y-1.5">
+              <label className="block text-xs font-semibold text-slate-300">
+                Purpose / Reason for Visit *
               </label>
               <textarea
                 required
@@ -182,13 +181,13 @@ export default function UserGatepassPage() {
                 placeholder="e.g. Visitor entry for maintenance, delivery, or guest event"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                className="input-field w-full p-3 text-xs"
+                className="glass-input w-full p-3 text-xs rounded-2xl focus:border-cyan-400"
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                Expected Time Duration / Slot
+            <div className="space-y-1.5">
+              <label className="block text-xs font-semibold text-slate-300">
+                Expected Time Duration / Slot *
               </label>
               <TimePicker value={time} onChange={setTime} />
             </div>
@@ -196,7 +195,7 @@ export default function UserGatepassPage() {
             <button
               type="submit"
               disabled={loading || !reason || !time}
-              className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30 transition-all"
+              className="btn-liquid-primary w-full py-4 rounded-2xl text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-xl shadow-cyan-600/30 spring-press disabled:opacity-50 mt-2"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -211,29 +210,22 @@ export default function UserGatepassPage() {
         </div>
 
         {/* QR Code Pass Preview Card */}
-        <div className="glass-panel rounded-3xl p-6 sm:p-8 flex flex-col items-center justify-center text-center space-y-6 min-h-[380px] border-cyan-500/20 relative overflow-hidden">
+        <div className="glass-floating rounded-3xl p-6 sm:p-8 flex flex-col items-center justify-center text-center space-y-6 min-h-[380px] relative overflow-hidden">
           {qrCodeImage ? (
-            <div className="space-y-6 w-full animate-fadeIn">
-              {/* QR Container with Centered logo.png */}
-              <div className="p-4 bg-white rounded-3xl inline-block shadow-2xl border-4 border-slate-200 dark:border-slate-900 mx-auto relative">
+            <div className="space-y-6 w-full animate-in fade-in zoom-in-95 duration-200">
+              <div className="p-4 bg-white rounded-3xl inline-block shadow-2xl border-4 border-cyan-400 mx-auto relative">
                 <img
                   src={qrCodeImage}
                   alt="Visitor Gate Pass QR"
                   className="w-48 h-48 object-contain mx-auto"
                 />
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="w-10 h-10 bg-white rounded-xl p-0.5 shadow-md border border-slate-200 flex items-center justify-center">
-                    <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
-                  </div>
-                </div>
               </div>
 
               <div className="space-y-1">
-                <div className="flex items-center justify-center gap-2 text-xs font-bold text-slate-900 dark:text-slate-100 uppercase">
-                  <img src="/logo.png" alt="Logo" className="w-4 h-4 object-contain" />
-                  <span>OFFICIAL VISITOR PASS</span>
+                <div className="flex items-center justify-center gap-2 text-xs font-bold text-white uppercase tracking-wider">
+                  <span>GATIFY VISITOR PASS</span>
                 </div>
-                <p className="text-[11px] text-slate-600 dark:text-slate-400 font-mono max-w-xs mx-auto truncate">
+                <p className="text-[11px] text-slate-400 font-mono max-w-xs mx-auto truncate">
                   {qrDataStr}
                 </p>
               </div>
@@ -241,14 +233,14 @@ export default function UserGatepassPage() {
               <div className="flex items-center justify-center gap-3 pt-2">
                 <button
                   onClick={handleDownloadQR}
-                  className="py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-md transition-all"
+                  className="btn-liquid-primary py-2.5 px-4 rounded-2xl text-white text-xs font-bold flex items-center gap-1.5 spring-press"
                 >
                   <Download className="w-4 h-4" />
                   Download PNG
                 </button>
                 <button
                   onClick={() => window.print()}
-                  className="py-2.5 px-4 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-all"
+                  className="btn-liquid-secondary py-2.5 px-4 rounded-2xl text-slate-200 text-xs font-semibold flex items-center gap-1.5 spring-press"
                 >
                   <Printer className="w-4 h-4" />
                   Print Pass
@@ -257,12 +249,12 @@ export default function UserGatepassPage() {
             </div>
           ) : (
             <div className="space-y-3 py-12">
-              <div className="w-16 h-16 rounded-3xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-600 mx-auto">
+              <div className="w-16 h-16 rounded-3xl bg-cyan-500/10 border border-cyan-400/30 flex items-center justify-center text-cyan-400 mx-auto">
                 <QrCode className="w-8 h-8" />
               </div>
-              <p className="text-sm font-semibold text-slate-800 dark:text-slate-300">QR Gate Pass Preview</p>
-              <p className="text-xs text-slate-600 dark:text-slate-500 max-w-xs mx-auto">
-                Complete the gate pass form to render your visitor security pass with centered logo.
+              <p className="text-sm font-bold text-white">QR Gate Pass Preview</p>
+              <p className="text-xs text-slate-400 max-w-xs mx-auto">
+                Complete the gate pass form to render your visitor security credential.
               </p>
             </div>
           )}
