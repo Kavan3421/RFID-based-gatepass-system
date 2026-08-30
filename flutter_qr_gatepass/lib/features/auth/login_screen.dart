@@ -72,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       final activeUrl = await ApiService.getBaseUrl();
       setState(() {
-        _errorMessage = 'Connection error: Unable to reach server at "$activeUrl".\nTap "Server Settings" below to change your IP address.';
+        _errorMessage = 'Connection error: Unable to reach server at "$activeUrl".';
       });
     } finally {
       if (mounted) {
@@ -303,11 +303,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           child: const Icon(Icons.qr_code_2, size: 40, color: Color(0xFF22D3EE)),
                         ),
-                        IconButton(
-                          icon: Icon(Icons.settings_ethernet, color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), size: 22),
-                          tooltip: "Server Connection Settings",
-                          onPressed: _showServerSettingsModal,
-                        ),
+                        const SizedBox(width: 48), // Spacer to keep the logo centered
                       ],
                     ),
                     const SizedBox(height: 14),
@@ -358,19 +354,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 ),
                               ],
-                            ),
-                            const SizedBox(height: 8),
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: TextButton.icon(
-                                style: TextButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                  backgroundColor: Colors.red.withOpacity(0.2),
-                                ),
-                                onPressed: _showServerSettingsModal,
-                                icon: const Icon(Icons.settings, size: 14, color: Colors.white),
-                                label: const Text("Configure Server URL", style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
-                              ),
                             ),
                           ],
                         ),

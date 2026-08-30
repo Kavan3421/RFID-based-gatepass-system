@@ -14,8 +14,8 @@ class ApiService {
   static String get platformDefaultUrl {
     if (kIsWeb) return localhostUrl;
     if (Platform.isAndroid) {
-      // In Android, default to LAN Wi-Fi or Ethernet
-      return lanEthernetUrl;
+      // In Android, default to LAN Wi-Fi
+      return lanWifiUrl;
     }
     return localhostUrl;
   }
@@ -23,8 +23,22 @@ class ApiService {
   static Future<String> getBaseUrl() async {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getString('gatify_base_url') ?? prefs.getString('qrgp_base_url');
-    // If the saved URL is the outdated 10.64.107.135, migrate to current IP
-    if (saved == null || saved.contains('10.64.107.135')) {
+    
+    // If the saved URL is outdated or null, auto-detect the working URL
+    if (saved == null || saved.contains('10.64.107.135') || saved.contains('10.64.107.134')) {
+      final candidates = [lanWifiUrl, emulatorUrl, lanEthernetUrl, localhostUrl];
+      
+      // Test all candidates in parallel
+      final results = await Future.wait(candidates.map((url) async {
+        final ok = await testConnection(url);
+        return ok ? url : null;
+      }));
+      
+      final workingUrl = results.firstWhere((url) => url != null, orElse: () => null);
+      if (workingUrl != null) {
+        await setBaseUrl(workingUrl);
+        return workingUrl;
+      }
       return platformDefaultUrl;
     }
     return saved;
