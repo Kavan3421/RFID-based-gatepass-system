@@ -1,62 +1,161 @@
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 /// Deep Ambient Canvas Background with Dynamic Chromatic Mesh Gradients
-class AmbientCanvasBackground extends StatelessWidget {
+class AmbientCanvasBackground extends StatefulWidget {
   final Widget child;
 
   const AmbientCanvasBackground({super.key, required this.child});
 
   @override
+  State<AmbientCanvasBackground> createState() =>
+      _AmbientCanvasBackgroundState();
+}
+
+class _AmbientCanvasBackgroundState extends State<AmbientCanvasBackground>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _flowController;
+
+  @override
+  void initState() {
+    super.initState();
+    _flowController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 14),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _flowController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0A1018) : const Color(0xFFF3F5F8),
-      ),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          Positioned(
-            top: -80,
-            left: -40,
-            child: Container(
-              width: 280,
-              height: 280,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    const Color(0xFF14B8A6).withValues(alpha: isDark ? 0.18 : 0.10),
-                    Colors.transparent,
-                  ],
+    return AnimatedBuilder(
+      animation: _flowController,
+      builder: (context, _) {
+        final t = _flowController.value;
+        final pulseA = 0.5 + (0.5 * math.sin(t * math.pi * 2));
+        final pulseB = 0.5 + (0.5 * math.sin((t * math.pi * 2) + 1.8));
+
+        return Container(
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF070D18) : const Color(0xFFEEF3FB),
+          ),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Positioned(
+                top: -90,
+                left: -60,
+                child: Container(
+                  width: 320,
+                  height: 320,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        const Color(0xFF79CBFF)
+                            .withValues(alpha: isDark ? 0.2 : 0.16),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
-          Positioned(
-            bottom: -90,
-            right: -70,
-            child: Container(
-              width: 260,
-              height: 260,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    const Color(0xFF0EA5E9).withValues(alpha: isDark ? 0.12 : 0.08),
-                    Colors.transparent,
-                  ],
+              Positioned(
+                bottom: -110,
+                right: -90,
+                child: Container(
+                  width: 310,
+                  height: 310,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        const Color(0xFF72DBBF)
+                            .withValues(alpha: isDark ? 0.16 : 0.12),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
                 ),
               ),
+              Positioned(
+                top: 90 + (pulseA * 24),
+                left: 34 + (pulseB * 18),
+                child: _floatingDroplet(
+                  size: 120,
+                  opacity: isDark ? 0.16 : 0.13,
+                ),
+              ),
+              Positioned(
+                bottom: 140 + (pulseB * 30),
+                right: 42 + (pulseA * 20),
+                child: _floatingDroplet(
+                  size: 92,
+                  opacity: isDark ? 0.14 : 0.12,
+                ),
+              ),
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Colors.white.withValues(alpha: isDark ? 0.07 : 0.15),
+                          Colors.transparent,
+                        ],
+                        stops: const [0.0, 0.38],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Material(
+                type: MaterialType.transparency,
+                child: widget.child,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _floatingDroplet({required double size, required double opacity}) {
+    return IgnorePointer(
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border:
+              Border.all(color: Colors.white.withValues(alpha: opacity * 0.95)),
+          gradient: RadialGradient(
+            center: const Alignment(-0.28, -0.34),
+            colors: [
+              Colors.white.withValues(alpha: opacity * 1.35),
+              const Color(0xFFB4DCFF).withValues(alpha: opacity * 0.7),
+              Colors.transparent,
+            ],
+            stops: const [0.0, 0.34, 1.0],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF4876A6).withValues(alpha: opacity * 0.55),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
             ),
-          ),
-          Material(
-            type: MaterialType.transparency,
-            child: child,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -84,32 +183,88 @@ class FrostedGlassCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final radius = BorderRadius.circular(borderRadius);
+    final fallbackBackground =
+        isDark ? const Color(0x9916233A) : const Color(0x99FFFFFF);
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(borderRadius),
+      borderRadius: radius,
       child: BackdropFilter(
         filter: ui.ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(borderRadius),
-            color: backgroundColor ?? (isDark ? const Color(0xFF141C28) : Colors.white),
-            border: customBorder ??
-                Border.all(
-                  color: isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE2E8F0),
+        child: Stack(
+          children: [
+            Container(
+              padding: padding,
+              decoration: BoxDecoration(
+                borderRadius: radius,
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.white.withValues(alpha: isDark ? 0.16 : 0.56),
+                    (backgroundColor ?? fallbackBackground),
+                    isDark ? const Color(0x8816233A) : const Color(0x9EF3F8FF),
+                  ],
                 ),
-            boxShadow: [
-              BoxShadow(
-                color: isDark ? Colors.black.withValues(alpha: 0.28) : const Color(0xFF94A3B8).withValues(alpha: 0.12),
-                blurRadius: 18,
-                offset: const Offset(0, 8),
+                border: customBorder ??
+                    Border.all(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.22)
+                          : const Color(0x8093AACB),
+                      width: 1.0,
+                    ),
+                boxShadow: [
+                  BoxShadow(
+                    color: isDark
+                        ? const Color(0xCC020816)
+                        : const Color(0x667698C3),
+                    blurRadius: 24,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: Material(
-            type: MaterialType.transparency,
-            child: child,
-          ),
+              child: Material(
+                type: MaterialType.transparency,
+                child: child,
+              ),
+            ),
+            Positioned.fill(
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: radius,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.center,
+                      colors: [
+                        Colors.white.withValues(alpha: isDark ? 0.26 : 0.45),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: -18,
+              right: -16,
+              child: IgnorePointer(
+                child: Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        Colors.white.withValues(alpha: isDark ? 0.28 : 0.40),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -148,7 +303,7 @@ class LiquidGlassButton extends StatelessWidget {
         height: 22,
         child: CircularProgressIndicator(
           strokeWidth: 2.5,
-          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF06201C)),
+          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF06213F)),
         ),
       );
     } else if (label != null) {
@@ -157,7 +312,7 @@ class LiquidGlassButton extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, color: const Color(0xFF06201C), size: 20),
+            Icon(icon, color: const Color(0xFF06213F), size: 20),
             const SizedBox(width: 8),
           ],
           Flexible(
@@ -165,8 +320,8 @@ class LiquidGlassButton extends StatelessWidget {
               label!,
               style: const TextStyle(
                 inherit: false,
-                color: Color(0xFF06201C),
-                fontWeight: FontWeight.w700,
+                color: Color(0xFF06213F),
+                fontWeight: FontWeight.w800,
                 fontSize: 15,
                 letterSpacing: 0.1,
               ),
@@ -187,30 +342,54 @@ class LiquidGlassButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(borderRadius),
         gradient: gradient ??
             const LinearGradient(
-              colors: [Color(0xFF2DD4BF), Color(0xFF0D9488)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
+              colors: [Color(0xFFC8EBFF), Color(0xFF79CBFF), Color(0xFF72DBBF)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0D9488).withValues(alpha: 0.28),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
+            color: const Color(0xFF5FA5E9).withValues(alpha: 0.32),
+            blurRadius: 16,
+            offset: const Offset(0, 7),
           ),
         ],
       ),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-          foregroundColor: const Color(0xFF06201C),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(borderRadius),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(borderRadius),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.white.withValues(alpha: 0.48),
+                      Colors.transparent,
+                    ],
+                    stops: const [0.0, 0.45],
+                  ),
+                ),
+              ),
+            ),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-        ),
-        onPressed: isLoading ? null : onPressed,
-        child: buttonContent,
+          Positioned.fill(
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                foregroundColor: const Color(0xFF06213F),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(borderRadius),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+              ),
+              onPressed: isLoading ? null : onPressed,
+              child: buttonContent,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -233,7 +412,7 @@ class GlassPillChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accentColor = color ?? const Color(0xFF06B6D4);
+    final accentColor = color ?? const Color(0xFF79CBFF);
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: BackdropFilter(
@@ -353,23 +532,26 @@ class _GlassTextFieldState extends State<GlassTextField> {
             gradient: LinearGradient(
               colors: isDark
                   ? [
-                      const Color(0xF00F172A),
-                      const Color(0xE0131E33),
+                      const Color(0xCA12233C),
+                      const Color(0xA5142A47),
                     ]
                   : [
-                      const Color(0xFFFFFFFF),
-                      const Color(0xFFF8FAFC),
+                      const Color(0xEFFFFFFF),
+                      const Color(0xCCF3F8FF),
                     ],
             ),
             border: Border.all(
-              color: isDark ? Colors.white.withValues(alpha: 0.25) : const Color(0xFFCBD5E1),
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.28)
+                  : const Color(0xFF93AACB),
               width: 1.0,
             ),
             boxShadow: [
               BoxShadow(
-                color: isDark ? Colors.black.withValues(alpha: 0.28) : const Color(0xFF94A3B8).withValues(alpha: 0.12),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+                color:
+                    isDark ? const Color(0x7A020816) : const Color(0x4A7E9EC7),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
@@ -380,15 +562,16 @@ class _GlassTextFieldState extends State<GlassTextField> {
             textCapitalization: widget.textCapitalization,
             onChanged: widget.onChanged,
             style: TextStyle(
-              color: isDark ? Colors.white : const Color(0xFF0F172A),
+              color: isDark ? const Color(0xFFF5F9FF) : const Color(0xFF12294A),
               fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
-            cursorColor: const Color(0xFF06B6D4),
+            cursorColor: const Color(0xFF79CBFF),
             decoration: InputDecoration(
               hintText: widget.hintText,
               hintStyle: TextStyle(
-                color: isDark ? Colors.white.withValues(alpha: 0.45) : const Color(0xFF94A3B8),
+                color:
+                    isDark ? const Color(0xFF8EA3BF) : const Color(0xFF6581A5),
                 fontSize: 13,
                 fontWeight: FontWeight.w400,
               ),
@@ -397,14 +580,17 @@ class _GlassTextFieldState extends State<GlassTextField> {
                   ? IconButton(
                       icon: Icon(
                         _obscured ? Icons.visibility_off : Icons.visibility,
-                        color: isDark ? Colors.white.withValues(alpha: 0.75) : const Color(0xFF64748B),
+                        color: isDark
+                            ? const Color(0xFFAFC3DD)
+                            : const Color(0xFF4F6B93),
                         size: 20,
                       ),
                       onPressed: () => setState(() => _obscured = !_obscured),
                     )
                   : widget.suffixIcon,
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
             ),
           ),
         ),
@@ -456,12 +642,16 @@ class GlassPlankTile extends StatelessWidget {
                       ],
               ),
               border: Border.all(
-                color: isDark ? Colors.white.withValues(alpha: 0.16) : const Color(0xFFE2E8F0),
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.16)
+                    : const Color(0xFFE2E8F0),
                 width: 1,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: isDark ? Colors.black.withValues(alpha: 0.25) : const Color(0xFF94A3B8).withValues(alpha: 0.08),
+                  color: isDark
+                      ? Colors.black.withValues(alpha: 0.25)
+                      : const Color(0xFF94A3B8).withValues(alpha: 0.08),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -530,7 +720,12 @@ class StoryStatusAvatar extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
-                  colors: isSelected ? ringColors : [Colors.white.withValues(alpha: 0.22), Colors.white.withValues(alpha: 0.08)],
+                  colors: isSelected
+                      ? ringColors
+                      : [
+                          Colors.white.withValues(alpha: 0.22),
+                          Colors.white.withValues(alpha: 0.08)
+                        ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -548,10 +743,16 @@ class StoryStatusAvatar extends StatelessWidget {
                 height: 54,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isDark ? const Color(0xFF0F172A) : const Color(0xFFFFFFFF),
+                  color: isDark
+                      ? const Color(0xFF0F172A)
+                      : const Color(0xFFFFFFFF),
                 ),
                 child: Center(
-                  child: Icon(icon, color: isSelected ? ringColors.first : (isDark ? Colors.white70 : const Color(0xFF64748B)), size: 24),
+                  child: Icon(icon,
+                      color: isSelected
+                          ? ringColors.first
+                          : (isDark ? Colors.white70 : const Color(0xFF64748B)),
+                      size: 24),
                 ),
               ),
             ),
@@ -559,7 +760,9 @@ class StoryStatusAvatar extends StatelessWidget {
             Text(
               title,
               style: TextStyle(
-                color: isSelected ? (isDark ? Colors.white : const Color(0xFF0F172A)) : const Color(0xFF94A3B8),
+                color: isSelected
+                    ? (isDark ? Colors.white : const Color(0xFF0F172A))
+                    : const Color(0xFF94A3B8),
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
               ),
@@ -623,11 +826,14 @@ class SocialActivityFeedCard extends StatelessWidget {
                     gradient: LinearGradient(
                       colors: isDelivery
                           ? [const Color(0xFFF59E0B), const Color(0xFFD97706)]
-                          : [const Color(0xFF06B6D4), const Color(0xFF2563EB)],
+                          : [const Color(0xFF79CBFF), const Color(0xFF4D88D2)],
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: (isDelivery ? const Color(0xFFF59E0B) : const Color(0xFF06B6D4)).withValues(alpha: 0.35),
+                        color: (isDelivery
+                                ? const Color(0xFFF59E0B)
+                                : const Color(0xFF79CBFF))
+                            .withValues(alpha: 0.35),
                         blurRadius: 10,
                       ),
                     ],
@@ -649,7 +855,9 @@ class SocialActivityFeedCard extends StatelessWidget {
                             child: Text(
                               personName,
                               style: TextStyle(
-                                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xFF0F172A),
                                 fontWeight: FontWeight.w900,
                                 fontSize: 14,
                               ),
@@ -657,7 +865,8 @@ class SocialActivityFeedCard extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 4),
-                          const Icon(Icons.verified, color: Color(0xFF06B6D4), size: 14),
+                          const Icon(Icons.verified,
+                              color: Color(0xFF79CBFF), size: 14),
                         ],
                       ),
                       const SizedBox(height: 2),
@@ -666,15 +875,20 @@ class SocialActivityFeedCard extends StatelessWidget {
                           Text(
                             isDelivery ? "Delivery Partner" : "Visitor Guest",
                             style: TextStyle(
-                              color: isDelivery ? const Color(0xFFFBBF24) : const Color(0xFF22D3EE),
+                              color: isDelivery
+                                  ? const Color(0xFFEAB167)
+                                  : const Color(0xFF8DD7FF),
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          const Text(" • ", style: TextStyle(color: Color(0xFF64748B), fontSize: 11)),
+                          const Text(" • ",
+                              style: TextStyle(
+                                  color: Color(0xFF64748B), fontSize: 11)),
                           Text(
                             time,
-                            style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
+                            style: const TextStyle(
+                                color: Color(0xFF94A3B8), fontSize: 11),
                           ),
                         ],
                       ),
@@ -683,7 +897,9 @@ class SocialActivityFeedCard extends StatelessWidget {
                 ),
                 GlassPillChip(
                   label: status,
-                  color: isInside ? const Color(0xFF10B981) : const Color(0xFF94A3B8),
+                  color: isInside
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFF94A3B8),
                   icon: isInside ? Icons.login : Icons.logout,
                 ),
               ],
@@ -707,14 +923,21 @@ class SocialActivityFeedCard extends StatelessWidget {
                         ],
                 ),
                 border: Border.all(
-                  color: isDark ? Colors.white.withValues(alpha: 0.10) : const Color(0xFFCBD5E1).withValues(alpha: 0.5),
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.10)
+                      : const Color(0xFFCBD5E1).withValues(alpha: 0.5),
                 ),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.location_on, color: Color(0xFF06B6D4), size: 16),
+                  const Icon(Icons.location_on,
+                      color: Color(0xFF79CBFF), size: 16),
                   const SizedBox(width: 6),
-                  const Text("Destinations: ", style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12, fontWeight: FontWeight.w600)),
+                  const Text("Destinations: ",
+                      style: TextStyle(
+                          color: Color(0xFF94A3B8),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600)),
                   Expanded(
                     child: Text(
                       destinations,
@@ -763,14 +986,25 @@ class FloatingGlassDock extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(34),
-              color: isDark ? const Color(0xFF141C28) : Colors.white,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withValues(alpha: isDark ? 0.17 : 0.66),
+                  isDark ? const Color(0xA516233A) : const Color(0xC2F6FAFF),
+                ],
+              ),
               border: Border.all(
-                color: isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE2E8F0),
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.24)
+                    : const Color(0x9693AACB),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: isDark ? Colors.black.withValues(alpha: 0.35) : const Color(0xFF94A3B8).withValues(alpha: 0.18),
-                  blurRadius: 20,
+                  color: isDark
+                      ? const Color(0xC9020816)
+                      : const Color(0x667698C3),
+                  blurRadius: 24,
                   offset: const Offset(0, 8),
                 ),
               ],
@@ -794,23 +1028,32 @@ class FloatingGlassDock extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   gradient: const LinearGradient(
-                                    colors: [Color(0xFF2DD4BF), Color(0xFF0D9488)],
+                                    colors: [
+                                      Color(0xFF93D8FF),
+                                      Color(0xFF74D8BF)
+                                    ],
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const Color(0xFF06B6D4).withValues(alpha: 0.50),
+                                      color: const Color(0xFF5FA5E9)
+                                          .withValues(alpha: 0.50),
                                       blurRadius: 16,
                                       offset: const Offset(0, 4),
                                     ),
                                   ],
                                 ),
-                                child: Icon(item.icon, color: Colors.white, size: 26),
+                                child: Icon(item.icon,
+                                    color: Colors.white, size: 26),
                               )
                             : AnimatedContainer(
                                 duration: const Duration(milliseconds: 200),
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 6),
                                 decoration: BoxDecoration(
-                                  color: isSelected ? const Color(0xFF14B8A6).withValues(alpha: 0.16) : Colors.transparent,
+                                  color: isSelected
+                                      ? const Color(0xFF79CBFF)
+                                          .withValues(alpha: 0.16)
+                                      : Colors.transparent,
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: Column(
@@ -818,7 +1061,9 @@ class FloatingGlassDock extends StatelessWidget {
                                   children: [
                                     Icon(
                                       item.icon,
-                                      color: isSelected ? const Color(0xFF14B8A6) : const Color(0xFF94A3B8),
+                                      color: isSelected
+                                          ? const Color(0xFF79CBFF)
+                                          : const Color(0xFF8EA3BF),
                                       size: 22,
                                     ),
                                     const SizedBox(height: 3),
@@ -829,9 +1074,13 @@ class FloatingGlassDock extends StatelessWidget {
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         inherit: false,
-                                        color: isSelected ? const Color(0xFF14B8A6) : const Color(0xFF94A3B8),
+                                        color: isSelected
+                                            ? const Color(0xFF79CBFF)
+                                            : const Color(0xFF8EA3BF),
                                         fontSize: 10,
-                                        fontWeight: isSelected ? FontWeight.w900 : FontWeight.w500,
+                                        fontWeight: isSelected
+                                            ? FontWeight.w900
+                                            : FontWeight.w500,
                                       ),
                                     ),
                                   ],

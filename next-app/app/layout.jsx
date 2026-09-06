@@ -32,12 +32,13 @@ export default function RootLayout({ children }) {
           }}
         />
         <Providers>
+          <div className="liquid-droplets-layer" aria-hidden="true" />
           <Navbar />
-          <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-5 sm:py-8 relative z-10">
+          <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-9 relative z-10">
             {children}
           </main>
-          <footer className="mt-auto border-t border-[var(--border)] py-6 text-sm text-[var(--text-muted)]">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <footer className="mt-auto py-4 sm:py-6 text-sm text-[var(--text-muted)] px-2 sm:px-4">
+            <div className="glass-panel max-w-6xl mx-auto px-4 sm:px-6 py-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-2">
               <span className="font-semibold text-[var(--text-primary)]">Gatify</span>
               <p>© {new Date().getFullYear()} Visitor access for communities and campuses.</p>
             </div>

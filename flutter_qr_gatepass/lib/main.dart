@@ -33,9 +33,12 @@ class _GatifyAppState extends State<GatifyApp> {
 
   Future<void> _restoreSession() async {
     try {
-      final prefs = await SharedPreferences.getInstance().timeout(const Duration(seconds: 2));
-      final token = prefs.getString('gatify_token') ?? prefs.getString('qrgp_token');
-      final userStr = prefs.getString('gatify_user') ?? prefs.getString('qrgp_user');
+      final prefs = await SharedPreferences.getInstance()
+          .timeout(const Duration(seconds: 2));
+      final token =
+          prefs.getString('gatify_token') ?? prefs.getString('qrgp_token');
+      final userStr =
+          prefs.getString('gatify_user') ?? prefs.getString('qrgp_user');
 
       if (token == null || userStr == null) return;
 
@@ -55,47 +58,137 @@ class _GatifyAppState extends State<GatifyApp> {
     return ValueListenableBuilder<bool>(
       valueListenable: ThemeController.isDarkMode,
       builder: (context, isDark, _) {
+        final lightScheme = const ColorScheme.light(
+          primary: Color(0xFF3B9DF3),
+          secondary: Color(0xFF46CAA6),
+          surface: Color(0xFFF5F9FF),
+          onPrimary: Color(0xFF031C3B),
+          onSecondary: Color(0xFF03281F),
+          onSurface: Color(0xFF132645),
+        );
+
+        final darkScheme = const ColorScheme.dark(
+          primary: Color(0xFF79CBFF),
+          secondary: Color(0xFF72DBBF),
+          surface: Color(0xFF122338),
+          onPrimary: Color(0xFF031C3B),
+          onSecondary: Color(0xFF062A22),
+          onSurface: Color(0xFFF4F8FF),
+        );
+
         return MaterialApp(
           title: 'Gatify',
           debugShowCheckedModeBanner: false,
           themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
           theme: ThemeData(
             brightness: Brightness.light,
-            scaffoldBackgroundColor: const Color(0xFFF3F5F8),
-            primaryColor: const Color(0xFF14B8A6),
-            colorScheme: const ColorScheme.light(
-              primary: Color(0xFF14B8A6),
-              secondary: Color(0xFF0EA5E9),
-              surface: Color(0xFFFFFFFF),
-              onPrimary: Colors.white,
-              onSecondary: Colors.white,
-              onSurface: Color(0xFF0F172A),
-            ),
-            appBarTheme: const AppBarTheme(
+            fontFamily: 'SF Pro Text',
+            scaffoldBackgroundColor: const Color(0xFFEEF3FB),
+            primaryColor: lightScheme.primary,
+            colorScheme: lightScheme,
+            appBarTheme: AppBarTheme(
               backgroundColor: Colors.transparent,
               elevation: 0,
-              titleTextStyle: TextStyle(color: Color(0xFF0F172A), fontSize: 16, fontWeight: FontWeight.w700),
-              iconTheme: IconThemeData(color: Color(0xFF0F172A)),
+              centerTitle: false,
+              surfaceTintColor: Colors.transparent,
+              titleTextStyle: const TextStyle(
+                  color: Color(0xFF102347),
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700),
+              iconTheme: const IconThemeData(color: Color(0xFF102347)),
+            ),
+            cardColor: const Color(0x80FFFFFF),
+            dividerColor: const Color(0x6689A1C2),
+            inputDecorationTheme: InputDecorationTheme(
+              filled: true,
+              fillColor: const Color(0xB8FFFFFF),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(18),
+                borderSide: const BorderSide(color: Color(0x8093AACB)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(18),
+                borderSide: const BorderSide(color: Color(0x8093AACB)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(18),
+                borderSide:
+                    const BorderSide(color: Color(0xFF3B9DF3), width: 1.3),
+              ),
+              hintStyle: const TextStyle(color: Color(0xFF6581A5)),
+              labelStyle: const TextStyle(
+                  color: Color(0xFF456487), fontWeight: FontWeight.w600),
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                elevation: 0,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18)),
+                backgroundColor: const Color(0xFF9FD7FF),
+                foregroundColor: const Color(0xFF06213F),
+                textStyle:
+                    const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+              ),
             ),
             useMaterial3: true,
           ),
           darkTheme: ThemeData(
             brightness: Brightness.dark,
-            scaffoldBackgroundColor: const Color(0xFF0A1018),
-            primaryColor: const Color(0xFF14B8A6),
-            colorScheme: const ColorScheme.dark(
-              primary: Color(0xFF14B8A6),
-              secondary: Color(0xFF0EA5E9),
-              surface: Color(0xFF0F172A),
-              onPrimary: Colors.white,
-              onSecondary: Colors.white,
-              onSurface: Colors.white,
-            ),
-            appBarTheme: const AppBarTheme(
+            fontFamily: 'SF Pro Text',
+            scaffoldBackgroundColor: const Color(0xFF070D18),
+            primaryColor: darkScheme.primary,
+            colorScheme: darkScheme,
+            appBarTheme: AppBarTheme(
               backgroundColor: Colors.transparent,
               elevation: 0,
-              titleTextStyle: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
-              iconTheme: IconThemeData(color: Colors.white),
+              centerTitle: false,
+              surfaceTintColor: Colors.transparent,
+              titleTextStyle: const TextStyle(
+                  color: Color(0xFFF4F8FF),
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700),
+              iconTheme: const IconThemeData(color: Color(0xFFF4F8FF)),
+            ),
+            cardColor: const Color(0x801B2639),
+            dividerColor: const Color(0x66B4CBE8),
+            inputDecorationTheme: InputDecorationTheme(
+              filled: true,
+              fillColor: const Color(0xAA16233A),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(18),
+                borderSide: const BorderSide(color: Color(0x66FFFFFF)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(18),
+                borderSide: const BorderSide(color: Color(0x66FFFFFF)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(18),
+                borderSide:
+                    const BorderSide(color: Color(0xFF79CBFF), width: 1.3),
+              ),
+              hintStyle: const TextStyle(color: Color(0xFF8EA3BF)),
+              labelStyle: const TextStyle(
+                  color: Color(0xFFB7C9E1), fontWeight: FontWeight.w600),
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                elevation: 0,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18)),
+                backgroundColor: const Color(0xFF86CCFF),
+                foregroundColor: const Color(0xFF06213F),
+                textStyle:
+                    const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+              ),
             ),
             useMaterial3: true,
           ),

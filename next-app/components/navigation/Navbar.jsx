@@ -51,8 +51,8 @@ export default function Navbar() {
   const hubLabel = user?.role === "ADMIN" ? "Admin" : user?.role === "GATEKEEPER" ? "Gate" : "Passes";
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--bg-canvas)]/90 backdrop-blur-md">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+    <header className="sticky top-0 z-50 pt-2 sm:pt-3 px-2 sm:px-4">
+      <div className="glass-nav-bar max-w-6xl mx-auto px-4 sm:px-6 h-16 rounded-2xl flex items-center justify-between gap-3 border-[1.2px]">
         <Link href="/" className="flex items-center gap-2.5 min-w-0">
           <div className="w-9 h-9 rounded-xl bg-teal-500/15 border border-teal-400/30 flex items-center justify-center shrink-0">
             <QrCode className="w-5 h-5 text-teal-400" />
@@ -66,7 +66,7 @@ export default function Navbar() {
         <div className="hidden md:flex items-center gap-2">
           <button
             onClick={toggleTheme}
-            className="p-2.5 rounded-xl border border-[var(--border)] hover:border-[var(--border-strong)]"
+            className="p-2.5 rounded-xl border border-[var(--border)] hover:border-[var(--border-strong)] bg-white/5"
             title="Toggle theme"
           >
             {theme === "dark" ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
@@ -93,7 +93,7 @@ export default function Navbar() {
                 <HubIcon className="w-4 h-4" />
                 {hubLabel}
               </Link>
-              <button onClick={handleLogout} className="p-2.5 rounded-xl border border-rose-500/20 text-rose-400" title="Sign out">
+              <button onClick={handleLogout} className="p-2.5 rounded-xl border border-rose-400/35 bg-rose-300/5 text-rose-300" title="Sign out">
                 <LogOut className="w-4 h-4" />
               </button>
             </>
@@ -101,17 +101,17 @@ export default function Navbar() {
         </div>
 
         <div className="flex md:hidden items-center gap-2">
-          <button onClick={toggleTheme} className="p-2.5 rounded-xl border border-[var(--border)]">
+          <button onClick={toggleTheme} className="p-2.5 rounded-xl border border-[var(--border)] bg-white/5">
             {theme === "dark" ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
           </button>
-          <button onClick={() => setOpen((v) => !v)} className="p-2.5 rounded-xl border border-[var(--border)]" aria-label="Menu">
+          <button onClick={() => setOpen((v) => !v)} className="p-2.5 rounded-xl border border-[var(--border)] bg-white/5" aria-label="Menu">
             {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
       </div>
 
       {open && (
-        <div className="md:hidden border-t border-[var(--border)] bg-[var(--bg-surface)] px-4 py-3 space-y-2">
+        <div className="md:hidden mt-2 glass-panel border-[1.2px] rounded-2xl max-w-6xl mx-auto px-4 py-3 space-y-2">
           {!user ? (
             <>
               <Link href="/onboarding" className="btn-liquid-secondary w-full py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">

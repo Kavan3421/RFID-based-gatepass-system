@@ -872,7 +872,7 @@ export default function AdminDashboardPage() {
               </button>
               <button
                 onClick={handleExportPDF}
-                className="py-2.5 px-4 rounded-2xl text-white font-extrabold text-xs flex items-center gap-2 shadow-lg bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-400 hover:to-red-500 shadow-rose-600/30 spring-press"
+                className="btn-liquid-secondary py-2.5 px-4 rounded-2xl font-extrabold text-xs flex items-center gap-2 spring-press"
               >
                 <FileText className="w-4 h-4" /> Export PDF Report
               </button>
