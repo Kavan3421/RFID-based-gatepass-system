@@ -13,48 +13,31 @@ class AmbientCanvasBackground extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        gradient: RadialGradient(
-          center: const Alignment(-0.8, -0.7),
-          radius: 1.4,
-          colors: isDark
-              ? const [
-                  Color(0xFF0A192F), // Cyan ambient deep hue
-                  Color(0xFF0C1322), // Blue ambient base
-                  Color(0xFF070A13), // Deep canvas base
-                ]
-              : const [
-                  Color(0xFFE2E8F0),
-                  Color(0xFFEDF2F7),
-                  Color(0xFFF8FAFC),
-                ],
-          stops: const [0.0, 0.45, 1.0],
-        ),
+        color: isDark ? const Color(0xFF0A1018) : const Color(0xFFF3F5F8),
       ),
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Secondary ambient mesh light (Bottom right)
           Positioned(
-            bottom: -90,
-            right: -70,
+            top: -80,
+            left: -40,
             child: Container(
-              width: 320,
-              height: 320,
+              width: 280,
+              height: 280,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xFF10B981).withValues(alpha: isDark ? 0.14 : 0.10),
+                    const Color(0xFF14B8A6).withValues(alpha: isDark ? 0.18 : 0.10),
                     Colors.transparent,
                   ],
                 ),
               ),
             ),
           ),
-          // Tertiary center-left light
           Positioned(
-            top: 250,
-            left: -80,
+            bottom: -90,
+            right: -70,
             child: Container(
               width: 260,
               height: 260,
@@ -62,7 +45,7 @@ class AmbientCanvasBackground extends StatelessWidget {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xFF6366F1).withValues(alpha: isDark ? 0.12 : 0.08),
+                    const Color(0xFF0EA5E9).withValues(alpha: isDark ? 0.12 : 0.08),
                     Colors.transparent,
                   ],
                 ),
@@ -110,23 +93,15 @@ class FrostedGlassCard extends StatelessWidget {
           padding: padding,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(borderRadius),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                backgroundColor ?? (isDark ? const Color(0xFF131D31).withValues(alpha: 0.88) : const Color(0xFFFFFFFF).withValues(alpha: 0.94)),
-                backgroundColor ?? (isDark ? const Color(0xFF0F172A).withValues(alpha: 0.78) : const Color(0xFFF1F5F9).withValues(alpha: 0.88)),
-              ],
-            ),
+            color: backgroundColor ?? (isDark ? const Color(0xFF141C28) : Colors.white),
             border: customBorder ??
                 Border.all(
-                  color: isDark ? Colors.white.withValues(alpha: 0.20) : const Color(0xFFCBD5E1).withValues(alpha: 0.80),
-                  width: 1.2,
+                  color: isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE2E8F0),
                 ),
             boxShadow: [
               BoxShadow(
-                color: isDark ? Colors.black.withValues(alpha: 0.35) : const Color(0xFF94A3B8).withValues(alpha: 0.15),
-                blurRadius: 20,
+                color: isDark ? Colors.black.withValues(alpha: 0.28) : const Color(0xFF94A3B8).withValues(alpha: 0.12),
+                blurRadius: 18,
                 offset: const Offset(0, 8),
               ),
             ],
@@ -173,7 +148,7 @@ class LiquidGlassButton extends StatelessWidget {
         height: 22,
         child: CircularProgressIndicator(
           strokeWidth: 2.5,
-          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF06201C)),
         ),
       );
     } else if (label != null) {
@@ -182,7 +157,7 @@ class LiquidGlassButton extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, color: Colors.white, size: 20),
+            Icon(icon, color: const Color(0xFF06201C), size: 20),
             const SizedBox(width: 8),
           ],
           Flexible(
@@ -190,10 +165,10 @@ class LiquidGlassButton extends StatelessWidget {
               label!,
               style: const TextStyle(
                 inherit: false,
-                color: Colors.white,
-                fontWeight: FontWeight.w900,
-                fontSize: 14,
-                letterSpacing: 0.4,
+                color: Color(0xFF06201C),
+                fontWeight: FontWeight.w700,
+                fontSize: 15,
+                letterSpacing: 0.1,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -212,14 +187,14 @@ class LiquidGlassButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(borderRadius),
         gradient: gradient ??
             const LinearGradient(
-              colors: [Color(0xFF06B6D4), Color(0xFF2563EB)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+              colors: [Color(0xFF2DD4BF), Color(0xFF0D9488)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
             ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF06B6D4).withValues(alpha: 0.45),
-            blurRadius: 16,
+            color: const Color(0xFF0D9488).withValues(alpha: 0.28),
+            blurRadius: 14,
             offset: const Offset(0, 6),
           ),
         ],
@@ -228,13 +203,9 @@ class LiquidGlassButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
-          foregroundColor: Colors.white,
+          foregroundColor: const Color(0xFF06201C),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadius),
-            side: BorderSide(
-              color: Colors.white.withValues(alpha: 0.5),
-              width: 1.5,
-            ),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16),
         ),
@@ -792,26 +763,15 @@ class FloatingGlassDock extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(34),
-              gradient: LinearGradient(
-                colors: isDark
-                    ? [
-                        const Color(0xFF0F172A).withValues(alpha: 0.92),
-                        const Color(0xFF131E33).withValues(alpha: 0.88),
-                      ]
-                    : [
-                        const Color(0xFFFFFFFF).withValues(alpha: 0.96),
-                        const Color(0xFFF1F5F9).withValues(alpha: 0.92),
-                      ],
-              ),
+              color: isDark ? const Color(0xFF141C28) : Colors.white,
               border: Border.all(
-                color: isDark ? Colors.white.withValues(alpha: 0.22) : const Color(0xFFCBD5E1).withValues(alpha: 0.8),
-                width: 1.2,
+                color: isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE2E8F0),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: isDark ? Colors.black.withValues(alpha: 0.45) : const Color(0xFF94A3B8).withValues(alpha: 0.2),
-                  blurRadius: 28,
-                  offset: const Offset(0, 10),
+                  color: isDark ? Colors.black.withValues(alpha: 0.35) : const Color(0xFF94A3B8).withValues(alpha: 0.18),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),
@@ -834,9 +794,7 @@ class FloatingGlassDock extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   gradient: const LinearGradient(
-                                    colors: [Color(0xFF06B6D4), Color(0xFF3B82F6)],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
+                                    colors: [Color(0xFF2DD4BF), Color(0xFF0D9488)],
                                   ),
                                   boxShadow: [
                                     BoxShadow(
@@ -852,7 +810,7 @@ class FloatingGlassDock extends StatelessWidget {
                                 duration: const Duration(milliseconds: 200),
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
                                 decoration: BoxDecoration(
-                                  color: isSelected ? const Color(0xFF06B6D4).withValues(alpha: 0.22) : Colors.transparent,
+                                  color: isSelected ? const Color(0xFF14B8A6).withValues(alpha: 0.16) : Colors.transparent,
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: Column(
@@ -860,7 +818,7 @@ class FloatingGlassDock extends StatelessWidget {
                                   children: [
                                     Icon(
                                       item.icon,
-                                      color: isSelected ? const Color(0xFF06B6D4) : const Color(0xFF94A3B8),
+                                      color: isSelected ? const Color(0xFF14B8A6) : const Color(0xFF94A3B8),
                                       size: 22,
                                     ),
                                     const SizedBox(height: 3),
@@ -871,7 +829,7 @@ class FloatingGlassDock extends StatelessWidget {
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         inherit: false,
-                                        color: isSelected ? const Color(0xFF06B6D4) : const Color(0xFF94A3B8),
+                                        color: isSelected ? const Color(0xFF14B8A6) : const Color(0xFF94A3B8),
                                         fontSize: 10,
                                         fontWeight: isSelected ? FontWeight.w900 : FontWeight.w500,
                                       ),

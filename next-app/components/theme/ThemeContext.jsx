@@ -28,9 +28,11 @@ export function ThemeProvider({ children }) {
     if (theme === "dark") {
       root.classList.add("dark");
       root.classList.remove("light");
+      root.setAttribute("data-theme", "dark");
     } else {
       root.classList.add("light");
       root.classList.remove("dark");
+      root.setAttribute("data-theme", "light");
     }
     localStorage.setItem("gatify_theme", theme);
   }, [theme, mounted]);

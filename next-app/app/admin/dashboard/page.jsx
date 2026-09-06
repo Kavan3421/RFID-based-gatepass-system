@@ -501,74 +501,57 @@ export default function AdminDashboardPage() {
   if (!user) return null;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-4 sm:py-8 space-y-8 text-left">
-      {/* Admin Command Header & Super-Access Control Bar */}
-      <div className="glass-floating rounded-3xl p-6 flex flex-wrap items-center justify-between gap-4 shadow-2xl">
-        <div className="space-y-1">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{organization.name || user.organizationName}</h1>
-            <span className="px-3.5 py-1 rounded-full glass-badge-cyan text-xs font-mono font-bold">
-              ORG ID: {user.organizationCode}
-            </span>
-            <span className="px-3.5 py-1 rounded-full glass-badge-emerald text-xs font-bold flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5" /> SUPER ADMIN
+    <div className="max-w-6xl mx-auto space-y-6">
+      <div className="glass-elevated rounded-2xl p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4">
+        <div className="space-y-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold truncate">{organization.name || user.organizationName}</h1>
+            <span className="px-2.5 py-1 rounded-full glass-badge-cyan text-xs font-medium">
+              {user.organizationCode}
             </span>
           </div>
-          <p className="text-xs text-slate-600 dark:text-slate-400">
-            Welcome, <strong className="text-slate-900 dark:text-white font-bold">{user.username}</strong> {user.phone ? `(${user.phone})` : ''} • Full Management & Gatekeeper Access
+          <p className="text-sm text-[var(--text-secondary)]">
+            {user.username}{user.phone ? ` · ${user.phone}` : ""}
           </p>
         </div>
 
-        {/* Super Access Action Buttons */}
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/member"
-            className="btn-liquid-secondary px-3.5 py-2 rounded-2xl text-slate-800 dark:text-white text-xs font-bold flex items-center gap-1.5 spring-press"
+            className="btn-liquid-secondary px-3 py-2 rounded-xl text-sm font-semibold flex items-center gap-1.5"
           >
-            <QrCode className="w-4 h-4 text-cyan-500" /> Member Pass
+            <QrCode className="w-4 h-4" /> Passes
           </Link>
-
           <Link
             href="/gatekeeper"
-            className="btn-liquid-secondary px-3.5 py-2 rounded-2xl text-slate-800 dark:text-white text-xs font-bold flex items-center gap-1.5 spring-press"
+            className="btn-liquid-secondary px-3 py-2 rounded-xl text-sm font-semibold flex items-center gap-1.5"
           >
-            <ScanLine className="w-4 h-4 text-amber-500" /> Gate Scanner
+            <ScanLine className="w-4 h-4" /> Scanner
           </Link>
-
           <button
             onClick={() => {
               setAdminProfileMsg({ type: "", text: "" });
               setShowAdminProfileModal(true);
             }}
-            className="p-2.5 rounded-2xl glass-pill text-slate-300 hover:text-white spring-press"
-            title="Edit My Profile"
+            className="p-2.5 rounded-xl border border-[var(--border)]"
+            title="Edit profile"
           >
-            <User className="w-4 h-4 text-cyan-400" />
+            <User className="w-4 h-4 text-teal-400" />
           </button>
-
           <button
             onClick={() => {
               setAdminPassMsg({ type: "", text: "" });
               setShowAdminPasswordModal(true);
             }}
-            className="p-2.5 rounded-2xl glass-pill text-slate-300 hover:text-white spring-press"
-            title="Change Password"
+            className="p-2.5 rounded-xl border border-[var(--border)]"
+            title="Change password"
           >
-            <KeyRound className="w-4 h-4 text-cyan-400" />
+            <KeyRound className="w-4 h-4 text-teal-400" />
           </button>
-
-          <button
-            onClick={toggleTheme}
-            className="p-2.5 rounded-2xl glass-pill text-slate-300 hover:text-white spring-press flex items-center justify-center transition-colors"
-            title={`Switch to ${theme === 'dark' ? 'Light Crystal' : 'Dark Obsidian'} Mode`}
-          >
-            {theme === "dark" ? <Sun className="w-4 h-4 text-amber-400 animate-in spin-in-180 duration-300" /> : <Moon className="w-4 h-4 text-indigo-500 animate-in spin-in-180 duration-300" />}
-          </button>
-
           <button
             onClick={handleLogout}
-            className="p-2.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 spring-press transition-colors"
-            title="Sign Out"
+            className="p-2.5 rounded-xl border border-rose-500/20 text-rose-400"
+            title="Sign out"
           >
             <LogOut className="w-4 h-4" />
           </button>
@@ -577,62 +560,58 @@ export default function AdminDashboardPage() {
 
       {/* TODAY'S OVERVIEW COUNTERS (Liquid Glass KPI Cards) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="glass-elevated rounded-3xl p-6 space-y-1">
-          <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 block">Guests Entered Today</span>
-          <span className="text-3xl sm:text-4xl font-black text-cyan-600 dark:text-cyan-300 block font-mono">{stats.guestsToday}</span>
+        <div className="glass-elevated rounded-2xl p-5 space-y-1">
+          <span className="text-sm text-[var(--text-secondary)]">Guests today</span>
+          <span className="text-3xl font-bold text-teal-400">{stats.guestsToday}</span>
         </div>
-        <div className="glass-elevated rounded-3xl p-6 space-y-1">
-          <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 block">Deliveries Logged Today</span>
-          <span className="text-3xl sm:text-4xl font-black text-blue-600 dark:text-blue-300 block font-mono">{stats.deliveriesToday}</span>
+        <div className="glass-elevated rounded-2xl p-5 space-y-1">
+          <span className="text-sm text-[var(--text-secondary)]">Deliveries today</span>
+          <span className="text-3xl font-bold text-sky-400">{stats.deliveriesToday}</span>
         </div>
-        <div className="glass-elevated rounded-3xl p-6 space-y-1">
-          <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 block">Currently Inside Campus</span>
-          <span className="text-3xl sm:text-4xl font-black text-emerald-600 dark:text-emerald-300 block font-mono">{stats.currentlyInside}</span>
+        <div className="glass-elevated rounded-2xl p-5 space-y-1">
+          <span className="text-sm text-[var(--text-secondary)]">Currently inside</span>
+          <span className="text-3xl font-bold text-emerald-400">{stats.currentlyInside}</span>
         </div>
-        <div className="glass-elevated rounded-3xl p-6 space-y-1">
-          <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 block">Exited Campus Today</span>
-          <span className="text-3xl sm:text-4xl font-black text-slate-700 dark:text-slate-400 block font-mono">{stats.exitedToday}</span>
+        <div className="glass-elevated rounded-2xl p-5 space-y-1">
+          <span className="text-sm text-[var(--text-secondary)]">Exited today</span>
+          <span className="text-3xl font-bold text-[var(--text-primary)]">{stats.exitedToday}</span>
         </div>
       </div>
 
       {/* ADMIN NAVIGATION TABS */}
-      <div className="flex items-center gap-2 p-1.5 rounded-2xl glass-sheet overflow-x-auto max-w-fit">
+      <div className="ui-tab-bar">
         <button
           onClick={() => setActiveTab("REGISTER")}
-          className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap spring-press ${activeTab === "REGISTER" ? "btn-liquid-primary text-white shadow-lg" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-            }`}
+          className={`px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap ${activeTab === "REGISTER" ? "btn-liquid-primary" : "text-[var(--text-secondary)]"}`}
         >
-          Live Activity Feed
+          Live feed
         </button>
         <button
           onClick={() => {
             setActiveTab("DESTINATIONS");
             fetchDestinations();
           }}
-          className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap spring-press ${activeTab === "DESTINATIONS" ? "btn-liquid-primary text-white shadow-lg" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-            }`}
+          className={`px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap ${activeTab === "DESTINATIONS" ? "btn-liquid-primary" : "text-[var(--text-secondary)]"}`}
         >
-          Destinations ({destinations.length})
+          Units ({destinations.length})
         </button>
         <button
           onClick={() => {
             setActiveTab("USERS");
             fetchUsers();
           }}
-          className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap spring-press ${activeTab === "USERS" ? "btn-liquid-primary text-white shadow-lg" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-            }`}
+          className={`px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap ${activeTab === "USERS" ? "btn-liquid-primary" : "text-[var(--text-secondary)]"}`}
         >
-          Member & Passwords
+          Members
         </button>
         <button
           onClick={() => {
             setActiveTab("REPORTS");
             fetchFilteredReports();
           }}
-          className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap spring-press ${activeTab === "REPORTS" ? "btn-liquid-primary text-white shadow-lg" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-            }`}
+          className={`px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap ${activeTab === "REPORTS" ? "btn-liquid-primary" : "text-[var(--text-secondary)]"}`}
         >
-          Reports & Exports
+          Reports
         </button>
       </div>
 

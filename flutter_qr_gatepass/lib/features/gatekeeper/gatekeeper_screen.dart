@@ -177,21 +177,21 @@ class _GatekeeperScreenState extends State<GatekeeperScreen> {
     final isDark = ThemeController.isDarkMode.value;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF070A13) : const Color(0xFFF1F5F9),
+      backgroundColor: isDark ? const Color(0xFF0A1018) : const Color(0xFFF3F5F8),
       extendBody: true,
       appBar: AppBar(
-        backgroundColor: (isDark ? const Color(0xFF0F172A) : Colors.white).withValues(alpha: isDark ? 0.85 : 0.88),
+        backgroundColor: isDark ? const Color(0xFF141C28) : Colors.white,
         elevation: 0,
         title: Row(
           children: [
-            const Icon(Icons.shield, color: Color(0xFF06B6D4), size: 20),
+            const Icon(Icons.shield, color: Color(0xFF14B8A6), size: 20),
             const SizedBox(width: 8),
             Text(
-              "Gatify Security Hub",
+              "Gatekeeper",
               style: TextStyle(
                 color: isDark ? Colors.white : const Color(0xFF0F172A),
-                fontSize: 16,
-                fontWeight: FontWeight.w900,
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],

@@ -500,28 +500,22 @@ class _AdminScreenState extends State<AdminScreen> {
     final isDark = ThemeController.isDarkMode.value;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF070A13) : const Color(0xFFF1F5F9),
+      backgroundColor: isDark ? const Color(0xFF0A1018) : const Color(0xFFF3F5F8),
       extendBody: true,
       appBar: AppBar(
-        backgroundColor: (isDark ? const Color(0xFF0F172A) : Colors.white).withValues(alpha: isDark ? 0.85 : 0.88),
+        backgroundColor: isDark ? const Color(0xFF141C28) : Colors.white,
         elevation: 0,
         titleSpacing: 16,
         title: Row(
           children: [
             Container(
-              width: 34,
-              height: 34,
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                gradient: const LinearGradient(colors: [Color(0xFF06B6D4), Color(0xFF2563EB)]),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF06B6D4).withValues(alpha: 0.35),
-                    blurRadius: 8,
-                  ),
-                ],
+                borderRadius: BorderRadius.circular(9),
+                color: const Color(0xFF14B8A6),
               ),
-              child: const Icon(Icons.shield, color: Colors.white, size: 18),
+              child: const Icon(Icons.shield, color: Color(0xFF06201C), size: 18),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -530,21 +524,21 @@ class _AdminScreenState extends State<AdminScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    _user != null ? "${_user!['organizationCode'] ?? 'Gatify'} Command" : "Gatify Command",
+                    _user != null ? "${_user!['organizationCode'] ?? 'Gatify'} Admin" : "Admin",
                     style: TextStyle(
                       color: isDark ? Colors.white : const Color(0xFF0F172A),
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
-                    "Spatial Access & Security Hub",
+                    "Dashboard",
                     style: TextStyle(
-                      color: isDark ? const Color(0xFF06B6D4) : const Color(0xFF0284C7),
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+                      color: isDark ? const Color(0xFF14B8A6) : const Color(0xFF0D9488),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

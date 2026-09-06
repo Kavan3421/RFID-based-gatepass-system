@@ -239,67 +239,48 @@ export default function MemberPage() {
   if (!user) return null;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-4 sm:py-8 space-y-6 text-left">
-      {/* Header */}
-      <div className="glass-floating rounded-3xl p-6 flex items-center justify-between shadow-2xl">
-        <div className="space-y-0.5">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-black text-cyan-400 uppercase tracking-widest block">MEMBER PORTAL</span>
-            <span className="text-slate-600">•</span>
-            <span className="text-xs text-slate-400 font-mono">ORG: {user.organizationCode}</span>
-          </div>
-          <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">Welcome, {user.username}</h1>
+    <div className="max-w-3xl mx-auto space-y-5">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="ui-kicker">Member portal · {user.organizationCode}</p>
+          <h1 className="text-2xl font-bold mt-1">Welcome, {user.username}</h1>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={toggleTheme}
-            className="p-2.5 rounded-2xl glass-pill text-slate-300 hover:text-white spring-press flex items-center justify-center transition-colors"
-            title={`Switch to ${theme === 'dark' ? 'Light Crystal' : 'Dark Obsidian'} Mode`}
-          >
-            {theme === "dark" ? <Sun className="w-4 h-4 text-amber-400 animate-in spin-in-180 duration-300" /> : <Moon className="w-4 h-4 text-indigo-500 animate-in spin-in-180 duration-300" />}
-          </button>
-          <button
-            onClick={handleLogout}
-            className="px-3.5 py-2 rounded-2xl glass-pill text-slate-300 hover:text-rose-400 text-xs font-bold flex items-center gap-1.5 spring-press"
-          >
-            <LogOut className="w-4 h-4" /> <span className="hidden sm:inline">Sign Out</span>
-          </button>
-        </div>
+        <button
+          onClick={handleLogout}
+          className="px-3 py-2 rounded-xl border border-[var(--border)] text-sm font-medium flex items-center gap-1.5 hover:text-rose-400"
+        >
+          <LogOut className="w-4 h-4" /> <span className="hidden sm:inline">Sign out</span>
+        </button>
       </div>
 
-      {/* Navigation Capsule Tabs */}
-      <div className="flex items-center gap-2.5 p-1.5 rounded-2xl glass-sheet max-w-fit">
+      <div className="ui-tab-bar">
         <button
           onClick={() => setActiveTab("CREATE")}
-          className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all spring-press ${
-            activeTab === "CREATE"
-              ? "btn-liquid-primary text-white shadow-lg"
-              : "text-slate-400 hover:text-white"
+          className={`flex-1 min-w-[140px] px-4 py-2.5 rounded-xl text-sm font-semibold ${
+            activeTab === "CREATE" ? "btn-liquid-primary" : "text-[var(--text-secondary)]"
           }`}
         >
-          Generate Guest Pass
+          New guest pass
         </button>
         <button
           onClick={() => {
             setActiveTab("HISTORY");
             fetchMyPasses();
           }}
-          className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all spring-press ${
-            activeTab === "HISTORY"
-              ? "btn-liquid-primary text-white shadow-lg"
-              : "text-slate-400 hover:text-white"
+          className={`flex-1 min-w-[140px] px-4 py-2.5 rounded-xl text-sm font-semibold ${
+            activeTab === "HISTORY" ? "btn-liquid-primary" : "text-[var(--text-secondary)]"
           }`}
         >
-          Pass History ({passes.length})
+          History ({passes.length})
         </button>
       </div>
 
       {/* GENERATE GUEST PASS TAB */}
       {activeTab === "CREATE" && (
-        <div className="glass-floating rounded-3xl p-6 sm:p-8 space-y-6 animate-in fade-in zoom-in-95 duration-200">
-          <h2 className="text-lg font-black text-white flex items-center gap-2">
-            <QrCode className="w-5 h-5 text-cyan-400" />
-            <span>Create Digital Visitor Credential</span>
+        <div className="glass-elevated rounded-2xl p-5 sm:p-7 space-y-6">
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <QrCode className="w-5 h-5 text-teal-400" />
+            <span>Create visitor pass</span>
           </h2>
 
           {error && (

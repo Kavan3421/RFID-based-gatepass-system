@@ -324,35 +324,23 @@ export default function GatekeeperPage() {
   if (!user) return null;
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-4 sm:py-6 space-y-6">
-      {/* Header Bar */}
-      <div className="glass-floating rounded-3xl p-5 flex items-center justify-between shadow-2xl">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 shadow-md">
+    <div className="max-w-2xl mx-auto space-y-5">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-xl bg-teal-500/15 flex items-center justify-center text-teal-400 shrink-0">
             <ShieldCheck className="w-5 h-5" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black text-cyan-400 uppercase tracking-widest block">GATIFY SECURITY HUB</span>
-            </div>
-            <h1 className="text-base sm:text-lg font-black text-white">{user.organizationName || user.organizationCode}</h1>
+          <div className="min-w-0">
+            <p className="ui-kicker">Gatekeeper</p>
+            <h1 className="text-lg font-bold truncate">{user.organizationName || user.organizationCode}</h1>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={toggleTheme}
-            className="p-2.5 rounded-2xl glass-pill text-slate-400 hover:text-white spring-press flex items-center justify-center"
-            title={`Switch to ${theme === 'dark' ? 'Light Crystal' : 'Dark Obsidian'} Mode`}
-          >
-            {theme === "dark" ? <Sun className="w-4 h-4 text-amber-400 animate-in spin-in-180 duration-300" /> : <Moon className="w-4 h-4 text-indigo-500 animate-in spin-in-180 duration-300" />}
-          </button>
-          <button
-            onClick={handleLogout}
-            className="p-2.5 rounded-2xl glass-pill text-slate-400 hover:text-rose-400 spring-press flex items-center gap-1.5 text-xs font-bold"
-          >
-            <LogOut className="w-4 h-4" /> <span className="hidden sm:inline">Exit</span>
-          </button>
-        </div>
+        <button
+          onClick={handleLogout}
+          className="p-2.5 rounded-xl border border-[var(--border)] hover:text-rose-400"
+        >
+          <LogOut className="w-4 h-4" />
+        </button>
       </div>
 
       {/* HOME MENU: 3 Massive Tactile Action Tiles */}
@@ -364,7 +352,7 @@ export default function GatekeeperPage() {
               setScanMode("ENTRY");
               setActiveTab("SCAN");
             }}
-            className="glass-tactile-tile w-full py-8 px-6 rounded-3xl flex items-center justify-between text-white spring-press text-left group border border-cyan-500/30 hover:border-cyan-400/60"
+            className="glass-tactile-tile w-full py-6 px-5 rounded-2xl flex items-center justify-between text-left group border border-teal-500/25"
           >
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/30 to-blue-600/40 border border-cyan-400/50 flex items-center justify-center text-cyan-300 shadow-xl shadow-cyan-500/30 group-hover:scale-105 transition-transform shrink-0">

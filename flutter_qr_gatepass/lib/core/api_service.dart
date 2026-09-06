@@ -5,47 +5,40 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  // Candidate default URLs
+  /// Current PC Wi-Fi IP (update if Windows IP changes).
+  static const String lanWifiUrl = "http://10.145.198.227:3000/api";
   static const String lanEthernetUrl = "http://10.64.107.134:3000/api";
-  static const String lanWifiUrl = "http://10.86.110.227:3000/api";
   static const String emulatorUrl = "http://10.0.2.2:3000/api";
   static const String localhostUrl = "http://127.0.0.1:3000/api";
+  static const List<String> _legacyUrls = [
+    "http://10.86.110.227:3000/api",
+    "http://10.64.107.135:3000/api",
+    "http://10.64.107.134:3000/api",
+    "http://169.254.68.21:3000/api",
+  ];
+
+  static String? _cachedBaseUrl;
 
   static String get platformDefaultUrl {
     if (kIsWeb) return localhostUrl;
-    if (Platform.isAndroid) {
-      // In Android, default to LAN Wi-Fi
-      return lanWifiUrl;
-    }
+    if (!kIsWeb && Platform.isAndroid) return lanWifiUrl;
+    if (!kIsWeb && Platform.isIOS) return lanWifiUrl;
     return localhostUrl;
   }
 
-  static Future<String> getBaseUrl() async {
-    final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getString('gatify_base_url') ?? prefs.getString('qrgp_base_url');
-    
-    // If the saved URL is outdated or null, auto-detect the working URL
-    if (saved == null || saved.contains('10.64.107.135') || saved.contains('10.64.107.134')) {
-      final candidates = [lanWifiUrl, emulatorUrl, lanEthernetUrl, localhostUrl];
-      
-      // Test all candidates in parallel
-      final results = await Future.wait(candidates.map((url) async {
-        final ok = await testConnection(url);
-        return ok ? url : null;
-      }));
-      
-      final workingUrl = results.firstWhere((url) => url != null, orElse: () => null);
-      if (workingUrl != null) {
-        await setBaseUrl(workingUrl);
-        return workingUrl;
-      }
-      return platformDefaultUrl;
-    }
-    return saved;
+  static List<String> get _probeUrls {
+    if (kIsWeb) return [localhostUrl];
+    final urls = <String>{
+      lanWifiUrl,
+      if (Platform.isAndroid) emulatorUrl,
+      lanEthernetUrl,
+      localhostUrl,
+      ..._legacyUrls,
+    };
+    return urls.toList();
   }
 
-  static Future<void> setBaseUrl(String url) async {
-    final prefs = await SharedPreferences.getInstance();
+  static String normalizeBaseUrl(String url) {
     String formatted = url.trim();
     if (formatted.endsWith('/')) {
       formatted = formatted.substring(0, formatted.length - 1);
@@ -53,21 +46,61 @@ class ApiService {
     if (!formatted.endsWith('/api')) {
       formatted = '$formatted/api';
     }
+    if (!formatted.startsWith('http://') && !formatted.startsWith('https://')) {
+      formatted = 'http://$formatted';
+    }
+    return formatted;
+  }
+
+  static Future<String> getBaseUrl() async {
+    if (_cachedBaseUrl != null) return _cachedBaseUrl!;
+
+    // Flutter web runs in the browser on this PC — talk to Next.js on localhost.
+    if (kIsWeb) {
+      _cachedBaseUrl = localhostUrl;
+      return _cachedBaseUrl!;
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getString('gatify_base_url') ?? prefs.getString('qrgp_base_url');
+
+    if (saved != null) {
+      final normalized = normalizeBaseUrl(saved);
+      _cachedBaseUrl = normalized;
+      return normalized;
+    }
+
+    _cachedBaseUrl = platformDefaultUrl;
+    return _cachedBaseUrl!;
+  }
+
+  static Future<String?> discoverWorkingUrl() async {
+    final results = await Future.wait(_probeUrls.map((url) async {
+      final ok = await testConnection(url);
+      return ok ? url : null;
+    }));
+    return results.firstWhere((url) => url != null, orElse: () => null);
+  }
+
+  static Future<void> setBaseUrl(String url) async {
+    final prefs = await SharedPreferences.getInstance();
+    final formatted = normalizeBaseUrl(url);
+    _cachedBaseUrl = formatted;
     await prefs.setString('gatify_base_url', formatted);
     await prefs.setString('qrgp_base_url', formatted);
   }
 
-  /// Test connection to a given URL
+  /// Test connection to a given URL. Never calls [getBaseUrl] (avoids recursion).
   static Future<bool> testConnection([String? candidateUrl]) async {
     try {
-      final urlStr = candidateUrl != null ? candidateUrl.trim() : await getBaseUrl();
+      final urlStr = normalizeBaseUrl((candidateUrl ?? platformDefaultUrl).trim());
       String testEndpoint = urlStr;
       if (testEndpoint.endsWith('/api')) {
         testEndpoint = testEndpoint.replaceAll(RegExp(r'/api$'), '');
       }
       final uri = Uri.parse(testEndpoint);
       final res = await http.get(uri).timeout(const Duration(seconds: 3));
-      return res.statusCode == 200 || res.statusCode == 404;
+      return res.statusCode == 200 || res.statusCode == 404 || res.statusCode == 307;
     } catch (_) {
       return false;
     }

@@ -48,31 +48,18 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (res['success'] == true) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('gatify_token', res['token']);
-        await prefs.setString('gatify_user', jsonEncode(res['user']));
-        await prefs.setString('qrgp_token', res['token']);
-        await prefs.setString('qrgp_user', jsonEncode(res['user']));
-
-        final role = res['user']['role'];
-        if (!mounted) return;
-
-        if (role == 'ADMIN') {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const AdminScreen()));
-        } else if (role == 'GATEKEEPER') {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const GatekeeperScreen()));
-        } else {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MemberScreen()));
-        }
-      } else {
-        setState(() {
-          _errorMessage = res['message'] ?? 'Login failed. Please check credentials.';
-        });
+        await _persistSession(res);
+        return;
       }
+
+      setState(() {
+        _errorMessage = res['message'] ?? 'Login failed. Please check credentials.';
+      });
     } catch (e) {
       final activeUrl = await ApiService.getBaseUrl();
       setState(() {
-        _errorMessage = 'Connection error: Unable to reach server at "$activeUrl".';
+        _errorMessage =
+            'Cannot reach the server at "$activeUrl". Keep Next.js running on port 3000. On a phone, tap the network icon and set your PC Wi-Fi IP.';
       });
     } finally {
       if (mounted) {
@@ -80,6 +67,25 @@ class _LoginScreenState extends State<LoginScreen> {
           _isLoading = false;
         });
       }
+    }
+  }
+
+  Future<void> _persistSession(Map<String, dynamic> res) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('gatify_token', res['token']);
+    await prefs.setString('gatify_user', jsonEncode(res['user']));
+    await prefs.setString('qrgp_token', res['token']);
+    await prefs.setString('qrgp_user', jsonEncode(res['user']));
+
+    final role = res['user']['role'];
+    if (!mounted) return;
+
+    if (role == 'ADMIN') {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const AdminScreen()));
+    } else if (role == 'GATEKEEPER') {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const GatekeeperScreen()));
+    } else {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MemberScreen()));
     }
   }
 
@@ -134,7 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   GlassTextField(
                     controller: urlController,
                     labelText: "Server API Base URL",
-                    hintText: "http://10.86.110.227:3000/api",
+                    hintText: "http://10.145.198.227:3000/api",
                     prefixIcon: const Icon(Icons.link, color: Color(0xFF06B6D4), size: 18),
                   ),
                   const SizedBox(height: 10),
@@ -147,7 +153,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     runSpacing: 6,
                     children: [
                       ActionChip(
-                        label: const Text("Wi-Fi (10.86.110.227)", style: TextStyle(fontSize: 11, color: Colors.white)),
+                        label: const Text("This PC Wi-Fi (10.145.198.227)", style: TextStyle(fontSize: 11, color: Colors.white)),
                         backgroundColor: const Color(0xFF1E293B),
                         onPressed: () => setModalState(() => urlController.text = ApiService.lanWifiUrl),
                       ),
@@ -256,7 +262,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final isDark = ThemeController.isDarkMode.value;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF070A13) : const Color(0xFFF1F5F9),
+      backgroundColor: isDark ? const Color(0xFF0A1018) : const Color(0xFFF3F5F8),
       body: AmbientCanvasBackground(
         child: SafeArea(
           child: Center(
@@ -277,56 +283,49 @@ class _LoginScreenState extends State<LoginScreen> {
                         IconButton(
                           icon: Icon(
                             isDark ? Icons.light_mode : Icons.dark_mode_outlined,
-                            color: isDark ? Colors.amberAccent : const Color(0xFF4F46E5),
+                            color: isDark ? Colors.amberAccent : const Color(0xFF0F172A),
                             size: 22,
                           ),
-                          tooltip: "Toggle Light/Dark Mode",
+                          tooltip: "Toggle theme",
                           onPressed: () => ThemeController.toggleTheme(),
                         ),
                         Container(
-                          width: 68,
-                          height: 68,
+                          width: 56,
+                          height: 56,
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(22),
-                            gradient: const LinearGradient(
-                              colors: [Color(0x3306B6D4), Color(0x442563EB)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            border: Border.all(color: const Color(0x8806B6D4), width: 1.5),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF06B6D4).withOpacity(0.35),
-                                blurRadius: 24,
-                              ),
-                            ],
+                            borderRadius: BorderRadius.circular(16),
+                            color: const Color(0xFF14B8A6).withOpacity(0.16),
                           ),
-                          child: const Icon(Icons.qr_code_2, size: 40, color: Color(0xFF22D3EE)),
+                          child: const Icon(Icons.qr_code_2, size: 30, color: Color(0xFF2DD4BF)),
                         ),
-                        const SizedBox(width: 48), // Spacer to keep the logo centered
+                        IconButton(
+                          icon: Icon(
+                            Icons.dns_outlined,
+                            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                            size: 22,
+                          ),
+                          tooltip: "Server URL",
+                          onPressed: _showServerSettingsModal,
+                        ),
                       ],
                     ),
                     const SizedBox(height: 14),
-
-                    // App Title
                     Text(
                       "Gatify",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: isDark ? Colors.white : const Color(0xFF0F172A),
-                        fontSize: 30,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.5,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
-                    const SizedBox(height: 3),
+                    const SizedBox(height: 4),
                     Text(
-                      "Spatial Access & Intelligent Visitor OS",
+                      "Gate pass & visitor access",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
                       ),
                     ),
                     const SizedBox(height: 28),
@@ -355,6 +354,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ],
                             ),
+                            if (_errorMessage!.toLowerCase().contains('cannot reach') ||
+                                _errorMessage!.toLowerCase().contains('connection')) ...[
+                              const SizedBox(height: 10),
+                              TextButton(
+                                onPressed: _showServerSettingsModal,
+                                child: const Text(
+                                  "Set server URL",
+                                  style: TextStyle(color: Color(0xFF14B8A6), fontWeight: FontWeight.w800),
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -412,7 +422,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     LiquidGlassButton(
                       onPressed: _handleLogin,
                       isLoading: _isLoading,
-                      label: "Sign In to Gatify Portal",
+                      label: "Sign in",
                       icon: Icons.arrow_forward,
                     ),
                   ],
