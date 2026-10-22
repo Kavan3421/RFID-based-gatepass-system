@@ -1,8 +1,9 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-/// Deep Ambient Canvas Background with Dynamic Chromatic Mesh Gradients
+/// Deep Ambient Canvas Background with Seamless Indigo & Cyan Chromatic Glows
 class AmbientCanvasBackground extends StatefulWidget {
   final Widget child;
 
@@ -22,8 +23,8 @@ class _AmbientCanvasBackgroundState extends State<AmbientCanvasBackground>
     super.initState();
     _flowController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 14),
-    )..repeat();
+      duration: const Duration(seconds: 16),
+    )..repeat(reverse: true);
   }
 
   @override
@@ -40,85 +41,109 @@ class _AmbientCanvasBackgroundState extends State<AmbientCanvasBackground>
       animation: _flowController,
       builder: (context, _) {
         final t = _flowController.value;
-        final pulseA = 0.5 + (0.5 * math.sin(t * math.pi * 2));
-        final pulseB = 0.5 + (0.5 * math.sin((t * math.pi * 2) + 1.8));
+        final pulseA = math.sin(t * math.pi) * 20.0;
+        final pulseB = math.cos(t * math.pi) * 25.0;
 
         return Container(
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF070D18) : const Color(0xFFEEF3FB),
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: isDark
+                  ? const [
+                      Color(0xFF070A13),
+                      Color(0xFF0A0F1D),
+                    ]
+                  : const [
+                      Color(0xFFF1F5F9),
+                      Color(0xFFE2E8F0),
+                    ],
+            ),
           ),
           child: Stack(
             fit: StackFit.expand,
             children: [
+              // Top-left soft ambient indigo chromatic glow
               Positioned(
-                top: -90,
-                left: -60,
-                child: Container(
-                  width: 320,
-                  height: 320,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [
-                        const Color(0xFF79CBFF)
-                            .withValues(alpha: isDark ? 0.2 : 0.16),
-                        Colors.transparent,
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                bottom: -110,
-                right: -90,
-                child: Container(
-                  width: 310,
-                  height: 310,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [
-                        const Color(0xFF72DBBF)
-                            .withValues(alpha: isDark ? 0.16 : 0.12),
-                        Colors.transparent,
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 90 + (pulseA * 24),
-                left: 34 + (pulseB * 18),
-                child: _floatingDroplet(
-                  size: 120,
-                  opacity: isDark ? 0.16 : 0.13,
-                ),
-              ),
-              Positioned(
-                bottom: 140 + (pulseB * 30),
-                right: 42 + (pulseA * 20),
-                child: _floatingDroplet(
-                  size: 92,
-                  opacity: isDark ? 0.14 : 0.12,
-                ),
-              ),
-              Positioned.fill(
+                top: -120 + pulseA,
+                left: -80 + pulseB,
                 child: IgnorePointer(
-                  child: DecoratedBox(
+                  child: Container(
+                    width: 420,
+                    height: 420,
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.white.withValues(alpha: isDark ? 0.07 : 0.15),
-                          Colors.transparent,
-                        ],
-                        stops: const [0.0, 0.38],
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: isDark
+                            ? [
+                                const Color(0xFF1E1B4B).withOpacity(0.18),
+                                const Color(0xFF312E81).withOpacity(0.08),
+                                Colors.transparent,
+                              ]
+                            : [
+                                const Color(0xFF818CF8).withOpacity(0.15),
+                                Colors.transparent,
+                              ],
+                        stops: const [0.0, 0.55, 1.0],
                       ),
                     ),
                   ),
                 ),
               ),
+
+              // Bottom-right soft ambient cyan chromatic glow
+              Positioned(
+                bottom: -140 - pulseA,
+                right: -90 - pulseB,
+                child: IgnorePointer(
+                  child: Container(
+                    width: 440,
+                    height: 440,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: isDark
+                            ? [
+                                const Color(0xFF0D3B42).withOpacity(0.16),
+                                const Color(0xFF06B6D4).withOpacity(0.06),
+                                Colors.transparent,
+                              ]
+                            : [
+                                const Color(0xFF38BDF8).withOpacity(0.14),
+                                Colors.transparent,
+                              ],
+                        stops: const [0.0, 0.50, 1.0],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // Mid-center subtle micro-refractive ambient sheen
+              Positioned(
+                top: 280 + pulseB,
+                right: -100 + pulseA,
+                child: IgnorePointer(
+                  child: Container(
+                    width: 320,
+                    height: 320,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          (isDark
+                                  ? const Color(0xFF0284C7)
+                                  : const Color(0xFF0EA5E9))
+                              .withOpacity(isDark ? 0.05 : 0.08),
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // Child UI Layer
               Material(
                 type: MaterialType.transparency,
                 child: widget.child,
@@ -129,39 +154,9 @@ class _AmbientCanvasBackgroundState extends State<AmbientCanvasBackground>
       },
     );
   }
-
-  Widget _floatingDroplet({required double size, required double opacity}) {
-    return IgnorePointer(
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border:
-              Border.all(color: Colors.white.withValues(alpha: opacity * 0.95)),
-          gradient: RadialGradient(
-            center: const Alignment(-0.28, -0.34),
-            colors: [
-              Colors.white.withValues(alpha: opacity * 1.35),
-              const Color(0xFFB4DCFF).withValues(alpha: opacity * 0.7),
-              Colors.transparent,
-            ],
-            stops: const [0.0, 0.34, 1.0],
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF4876A6).withValues(alpha: opacity * 0.55),
-              blurRadius: 18,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
-/// Authentic Frosted Glass Card with Dual-Stop Directional Border & Light Transmission
+/// Authentic Frosted Glass Card with Dual-Tone Directional Rim (No Corner Artifacts)
 class FrostedGlassCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
@@ -184,8 +179,6 @@ class FrostedGlassCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final radius = BorderRadius.circular(borderRadius);
-    final fallbackBackground =
-        isDark ? const Color(0x9916233A) : const Color(0x99FFFFFF);
 
     return ClipRRect(
       borderRadius: radius,
@@ -193,6 +186,7 @@ class FrostedGlassCard extends StatelessWidget {
         filter: ui.ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
         child: Stack(
           children: [
+            // Glass Base Fill
             Container(
               padding: padding,
               decoration: BoxDecoration(
@@ -201,24 +195,20 @@ class FrostedGlassCard extends StatelessWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Colors.white.withValues(alpha: isDark ? 0.16 : 0.56),
-                    (backgroundColor ?? fallbackBackground),
-                    isDark ? const Color(0x8816233A) : const Color(0x9EF3F8FF),
+                    Colors.white.withOpacity(isDark ? 0.08 : 0.70),
+                    Colors.white.withOpacity(isDark ? 0.02 : 0.35),
                   ],
                 ),
+                color: backgroundColor,
                 border: customBorder ??
                     Border.all(
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.22)
-                          : const Color(0x8093AACB),
+                      color: Colors.white.withOpacity(isDark ? 0.12 : 0.45),
                       width: 1.0,
                     ),
                 boxShadow: [
                   BoxShadow(
-                    color: isDark
-                        ? const Color(0xCC020816)
-                        : const Color(0x667698C3),
-                    blurRadius: 24,
+                    color: Colors.black.withOpacity(isDark ? 0.45 : 0.08),
+                    blurRadius: 28,
                     offset: const Offset(0, 10),
                   ),
                 ],
@@ -228,36 +218,20 @@ class FrostedGlassCard extends StatelessWidget {
                 child: child,
               ),
             ),
-            Positioned.fill(
-              child: IgnorePointer(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    borderRadius: radius,
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.center,
-                      colors: [
-                        Colors.white.withValues(alpha: isDark ? 0.26 : 0.45),
-                        Colors.transparent,
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
+
+            // Top-down Specular Edge Highlight (Crisp directional light transmission)
             Positioned(
-              top: -18,
-              right: -16,
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 1.2,
               child: IgnorePointer(
                 child: Container(
-                  width: 72,
-                  height: 72,
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
+                    gradient: LinearGradient(
                       colors: [
-                        Colors.white.withValues(alpha: isDark ? 0.28 : 0.40),
-                        Colors.transparent,
+                        Colors.white.withOpacity(isDark ? 0.30 : 0.80),
+                        Colors.white.withOpacity(isDark ? 0.05 : 0.20),
                       ],
                     ),
                   ),
@@ -271,8 +245,14 @@ class FrostedGlassCard extends StatelessWidget {
   }
 }
 
-/// Liquid Glass Primary Action Button with Guaranteed 100% High-Contrast Text
-class LiquidGlassButton extends StatelessWidget {
+/// Alias for AppGlassSurface
+typedef AppGlassSurface = FrostedGlassCard;
+
+/// Alias for AppBackground
+typedef AppBackground = AmbientCanvasBackground;
+
+/// Liquid Glass Kinetic Action Button with Spring Physics & Micro-Haptics
+class LiquidGlassButton extends StatefulWidget {
   final VoidCallback? onPressed;
   final Widget? child;
   final String? label;
@@ -290,40 +270,61 @@ class LiquidGlassButton extends StatelessWidget {
     this.icon,
     this.isLoading = false,
     this.gradient,
-    this.height = 54,
-    this.borderRadius = 20,
+    this.height = 52,
+    this.borderRadius = 18,
   });
+
+  @override
+  State<LiquidGlassButton> createState() => _LiquidGlassButtonState();
+}
+
+class _LiquidGlassButtonState extends State<LiquidGlassButton> {
+  bool _isPressed = false;
+
+  void _handleTapDown(TapDownDetails _) {
+    if (widget.isLoading || widget.onPressed == null) return;
+    HapticFeedback.lightImpact();
+    setState(() => _isPressed = true);
+  }
+
+  void _handleTapUp(TapUpDetails _) {
+    if (_isPressed) setState(() => _isPressed = false);
+  }
+
+  void _handleTapCancel() {
+    if (_isPressed) setState(() => _isPressed = false);
+  }
 
   @override
   Widget build(BuildContext context) {
     Widget buttonContent;
-    if (isLoading) {
+    if (widget.isLoading) {
       buttonContent = const SizedBox(
-        width: 22,
-        height: 22,
+        width: 20,
+        height: 20,
         child: CircularProgressIndicator(
-          strokeWidth: 2.5,
-          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF06213F)),
+          strokeWidth: 2.2,
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
         ),
       );
-    } else if (label != null) {
+    } else if (widget.label != null) {
       buttonContent = Row(
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (icon != null) ...[
-            Icon(icon, color: const Color(0xFF06213F), size: 20),
+          if (widget.icon != null) ...[
+            Icon(widget.icon, color: Colors.white, size: 19),
             const SizedBox(width: 8),
           ],
           Flexible(
             child: Text(
-              label!,
+              widget.label!,
               style: const TextStyle(
                 inherit: false,
-                color: Color(0xFF06213F),
-                fontWeight: FontWeight.w800,
-                fontSize: 15,
-                letterSpacing: 0.1,
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 14.5,
+                letterSpacing: 0.2,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -332,64 +333,68 @@ class LiquidGlassButton extends StatelessWidget {
         ],
       );
     } else {
-      buttonContent = child ?? const SizedBox.shrink();
+      buttonContent = widget.child ?? const SizedBox.shrink();
     }
 
-    return Container(
-      width: double.infinity,
-      height: height,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(borderRadius),
-        gradient: gradient ??
-            const LinearGradient(
-              colors: [Color(0xFFC8EBFF), Color(0xFF79CBFF), Color(0xFF72DBBF)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF5FA5E9).withValues(alpha: 0.32),
-            blurRadius: 16,
-            offset: const Offset(0, 7),
+    final defaultGradient = LinearGradient(
+      colors: [
+        const Color(0xFF06B6D4).withOpacity(0.85),
+        const Color(0xFF0E7490).withOpacity(0.92),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+
+    return GestureDetector(
+      onTapDown: _handleTapDown,
+      onTapUp: _handleTapUp,
+      onTapCancel: _handleTapCancel,
+      onTap: widget.isLoading ? null : widget.onPressed,
+      child: AnimatedScale(
+        scale: _isPressed ? 0.97 : 1.0,
+        duration: const Duration(milliseconds: 140),
+        curve: Curves.easeOutCubic,
+        child: Container(
+          width: double.infinity,
+          height: widget.height,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(widget.borderRadius),
+            gradient: widget.gradient ?? defaultGradient,
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF06B6D4).withOpacity(0.25),
+                blurRadius: 18,
+                offset: const Offset(0, 6),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: IgnorePointer(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(borderRadius),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.white.withValues(alpha: 0.48),
-                      Colors.transparent,
-                    ],
-                    stops: const [0.0, 0.45],
+          child: Stack(
+            children: [
+              // Top Specular Highlight Rim
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 1.0,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(widget.borderRadius),
+                    ),
+                    color: Colors.white.withOpacity(0.40),
                   ),
                 ),
               ),
-            ),
-          ),
-          Positioned.fill(
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                shadowColor: Colors.transparent,
-                foregroundColor: const Color(0xFF06213F),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(borderRadius),
+              // Button Content
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: buttonContent,
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
               ),
-              onPressed: isLoading ? null : onPressed,
-              child: buttonContent,
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -412,23 +417,23 @@ class GlassPillChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accentColor = color ?? const Color(0xFF79CBFF);
+    final accentColor = color ?? const Color(0xFF22D3EE);
     return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(16),
       child: BackdropFilter(
         filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(16),
             gradient: LinearGradient(
               colors: [
-                accentColor.withValues(alpha: 0.24),
-                accentColor.withValues(alpha: 0.12),
+                accentColor.withOpacity(0.20),
+                accentColor.withOpacity(0.08),
               ],
             ),
             border: Border.all(
-              color: accentColor.withValues(alpha: 0.48),
+              color: accentColor.withOpacity(0.35),
               width: 1,
             ),
           ),
@@ -436,24 +441,25 @@ class GlassPillChip extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (icon != null) ...[
-                Icon(icon, size: 13, color: accentColor),
-                const SizedBox(width: 5),
+                Icon(icon, size: 12, color: accentColor),
+                const SizedBox(width: 4),
               ],
               Text(
                 label,
                 style: TextStyle(
                   color: accentColor,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11,
+                  letterSpacing: 0.3,
                 ),
               ),
               if (onDeleted != null) ...[
-                const SizedBox(width: 6),
+                const SizedBox(width: 5),
                 GestureDetector(
                   onTap: onDeleted,
                   child: Icon(
                     Icons.close,
-                    size: 14,
+                    size: 13,
                     color: accentColor,
                   ),
                 ),
@@ -466,7 +472,7 @@ class GlassPillChip extends StatelessWidget {
   }
 }
 
-/// High-Contrast Frosted Glass Text Field
+/// High-Contrast Sunken Glass Text Field
 class GlassTextField extends StatefulWidget {
   final TextEditingController controller;
   final String hintText;
@@ -499,11 +505,22 @@ class GlassTextField extends StatefulWidget {
 
 class _GlassTextFieldState extends State<GlassTextField> {
   late bool _obscured;
+  final FocusNode _focusNode = FocusNode();
+  bool _isFocused = false;
 
   @override
   void initState() {
     super.initState();
     _obscured = widget.isPassword || widget.obscureText;
+    _focusNode.addListener(() {
+      setState(() => _isFocused = _focusNode.hasFocus);
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
   }
 
   @override
@@ -518,60 +535,53 @@ class _GlassTextFieldState extends State<GlassTextField> {
             widget.labelText!,
             style: TextStyle(
               inherit: false,
-              color: isDark ? const Color(0xFFF1F5F9) : const Color(0xFF0F172A),
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.2,
+              color: isDark
+                  ? Colors.white.withOpacity(0.80)
+                  : const Color(0xFF1E293B),
+              fontSize: 11.5,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.3,
             ),
           ),
           const SizedBox(height: 6),
         ],
         Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            gradient: LinearGradient(
-              colors: isDark
-                  ? [
-                      const Color(0xCA12233C),
-                      const Color(0xA5142A47),
-                    ]
-                  : [
-                      const Color(0xEFFFFFFF),
-                      const Color(0xCCF3F8FF),
-                    ],
-            ),
+            borderRadius: BorderRadius.circular(16),
+            color: isDark ? const Color(0x59000000) : const Color(0xCCFFFFFF),
             border: Border.all(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.28)
-                  : const Color(0xFF93AACB),
+              color: _isFocused
+                  ? const Color(0xFF06B6D4).withOpacity(0.60)
+                  : Colors.white.withOpacity(isDark ? 0.14 : 0.40),
               width: 1.0,
             ),
             boxShadow: [
-              BoxShadow(
-                color:
-                    isDark ? const Color(0x7A020816) : const Color(0x4A7E9EC7),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
+              if (_isFocused)
+                BoxShadow(
+                  color: const Color(0xFF06B6D4).withOpacity(0.18),
+                  blurRadius: 10,
+                ),
             ],
           ),
           child: TextField(
             controller: widget.controller,
+            focusNode: _focusNode,
             obscureText: _obscured,
             keyboardType: widget.keyboardType,
             textCapitalization: widget.textCapitalization,
             onChanged: widget.onChanged,
             style: TextStyle(
-              color: isDark ? const Color(0xFFF5F9FF) : const Color(0xFF12294A),
+              color: isDark ? Colors.white : const Color(0xFF0F172A),
               fontSize: 14,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
             ),
-            cursorColor: const Color(0xFF79CBFF),
+            cursorColor: const Color(0xFF22D3EE),
             decoration: InputDecoration(
               hintText: widget.hintText,
               hintStyle: TextStyle(
-                color:
-                    isDark ? const Color(0xFF8EA3BF) : const Color(0xFF6581A5),
+                color: isDark
+                    ? Colors.white.withOpacity(0.40)
+                    : const Color(0xFF94A3B8),
                 fontSize: 13,
                 fontWeight: FontWeight.w400,
               ),
@@ -581,16 +591,16 @@ class _GlassTextFieldState extends State<GlassTextField> {
                       icon: Icon(
                         _obscured ? Icons.visibility_off : Icons.visibility,
                         color: isDark
-                            ? const Color(0xFFAFC3DD)
-                            : const Color(0xFF4F6B93),
-                        size: 20,
+                            ? Colors.white.withOpacity(0.60)
+                            : const Color(0xFF64748B),
+                        size: 19,
                       ),
                       onPressed: () => setState(() => _obscured = !_obscured),
                     )
                   : widget.suffixIcon,
               border: InputBorder.none,
               contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             ),
           ),
         ),
@@ -599,8 +609,8 @@ class _GlassTextFieldState extends State<GlassTextField> {
   }
 }
 
-/// Fluid Frosted Plank for Live Feeds & Records
-class GlassPlankTile extends StatelessWidget {
+/// Streamlined Liquid Glass Plank for Live Feeds & Records
+class GlassPlankTile extends StatefulWidget {
   final Widget leading;
   final Widget title;
   final Widget? subtitle;
@@ -617,66 +627,79 @@ class GlassPlankTile extends StatelessWidget {
   });
 
   @override
+  State<GlassPlankTile> createState() => _GlassPlankTileState();
+}
+
+class _GlassPlankTileState extends State<GlassPlankTile> {
+  bool _isPressed = false;
+
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(18),
-        child: BackdropFilter(
-          filter: ui.ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-          child: Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(18),
-              gradient: LinearGradient(
-                colors: isDark
-                    ? [
-                        const Color(0xFF0F172A).withValues(alpha: 0.85),
-                        const Color(0xFF131D31).withValues(alpha: 0.70),
-                      ]
-                    : [
-                        const Color(0xFFFFFFFF).withValues(alpha: 0.95),
-                        const Color(0xFFF8FAFC).withValues(alpha: 0.90),
-                      ],
-              ),
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.16)
-                    : const Color(0xFFE2E8F0),
-                width: 1,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: isDark
-                      ? Colors.black.withValues(alpha: 0.25)
-                      : const Color(0xFF94A3B8).withValues(alpha: 0.08),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Material(
-              type: MaterialType.transparency,
-              child: Row(
-                children: [
-                  leading,
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        title,
-                        if (subtitle != null) ...[
-                          const SizedBox(height: 3),
-                          subtitle!,
-                        ],
-                      ],
-                    ),
+      padding: const EdgeInsets.only(bottom: 8),
+      child: GestureDetector(
+        onTapDown: widget.onTap != null
+            ? (_) {
+                HapticFeedback.lightImpact();
+                setState(() => _isPressed = true);
+              }
+            : null,
+        onTapUp: widget.onTap != null ? (_) => setState(() => _isPressed = false) : null,
+        onTapCancel: widget.onTap != null ? () => setState(() => _isPressed = false) : null,
+        onTap: widget.onTap,
+        child: AnimatedScale(
+          scale: _isPressed ? 0.985 : 1.0,
+          duration: const Duration(milliseconds: 120),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: BackdropFilter(
+              filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.white.withOpacity(isDark ? 0.06 : 0.70),
+                      Colors.white.withOpacity(isDark ? 0.02 : 0.40),
+                    ],
                   ),
-                  if (trailing != null) trailing!,
-                ],
+                  border: Border.all(
+                    color: Colors.white.withOpacity(isDark ? 0.09 : 0.35),
+                    width: 1.0,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(isDark ? 0.30 : 0.05),
+                      blurRadius: 14,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: Row(
+                    children: [
+                      widget.leading,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            widget.title,
+                            if (widget.subtitle != null) ...[
+                              const SizedBox(height: 2),
+                              widget.subtitle!,
+                            ],
+                          ],
+                        ),
+                      ),
+                      if (widget.trailing != null) widget.trailing!,
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
@@ -710,21 +733,24 @@ class StoryStatusAvatar extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
       child: Container(
         margin: const EdgeInsets.only(right: 14),
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(2.5),
+              padding: const EdgeInsets.all(2.2),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
                   colors: isSelected
                       ? ringColors
                       : [
-                          Colors.white.withValues(alpha: 0.22),
-                          Colors.white.withValues(alpha: 0.08)
+                          Colors.white.withOpacity(isDark ? 0.18 : 0.40),
+                          Colors.white.withOpacity(isDark ? 0.06 : 0.20),
                         ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -732,15 +758,15 @@ class StoryStatusAvatar extends StatelessWidget {
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: ringColors.first.withValues(alpha: 0.45),
-                          blurRadius: 12,
+                          color: ringColors.first.withOpacity(0.35),
+                          blurRadius: 10,
                         ),
                       ]
                     : null,
               ),
               child: Container(
-                width: 54,
-                height: 54,
+                width: 50,
+                height: 50,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: isDark
@@ -748,11 +774,15 @@ class StoryStatusAvatar extends StatelessWidget {
                       : const Color(0xFFFFFFFF),
                 ),
                 child: Center(
-                  child: Icon(icon,
-                      color: isSelected
-                          ? ringColors.first
-                          : (isDark ? Colors.white70 : const Color(0xFF64748B)),
-                      size: 24),
+                  child: Icon(
+                    icon,
+                    color: isSelected
+                        ? ringColors.first
+                        : (isDark
+                            ? Colors.white.withOpacity(0.65)
+                            : const Color(0xFF64748B)),
+                    size: 22,
+                  ),
                 ),
               ),
             ),
@@ -762,7 +792,9 @@ class StoryStatusAvatar extends StatelessWidget {
               style: TextStyle(
                 color: isSelected
                     ? (isDark ? Colors.white : const Color(0xFF0F172A))
-                    : const Color(0xFF94A3B8),
+                    : (isDark
+                        ? Colors.white.withOpacity(0.60)
+                        : const Color(0xFF94A3B8)),
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
               ),
@@ -782,7 +814,7 @@ class StoryStatusAvatar extends StatelessWidget {
   }
 }
 
-/// Social Media Style Feed Card for Gate Entries
+/// Refined Social Media Style Feed Card for Gate Entries
 class SocialActivityFeedCard extends StatelessWidget {
   final String personName;
   final String entryType;
@@ -808,10 +840,10 @@ class SocialActivityFeedCard extends StatelessWidget {
     final isInside = status == 'INSIDE';
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 10),
       child: FrostedGlassCard(
-        borderRadius: 22,
-        padding: const EdgeInsets.all(16),
+        borderRadius: 20,
+        padding: const EdgeInsets.all(15),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -819,21 +851,21 @@ class SocialActivityFeedCard extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  width: 42,
-                  height: 42,
+                  width: 38,
+                  height: 38,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(12),
                     gradient: LinearGradient(
                       colors: isDelivery
                           ? [const Color(0xFFF59E0B), const Color(0xFFD97706)]
-                          : [const Color(0xFF79CBFF), const Color(0xFF4D88D2)],
+                          : [const Color(0xFF06B6D4), const Color(0xFF0E7490)],
                     ),
                     boxShadow: [
                       BoxShadow(
                         color: (isDelivery
                                 ? const Color(0xFFF59E0B)
-                                : const Color(0xFF79CBFF))
-                            .withValues(alpha: 0.35),
+                                : const Color(0xFF06B6D4))
+                            .withOpacity(0.25),
                         blurRadius: 10,
                       ),
                     ],
@@ -841,7 +873,7 @@ class SocialActivityFeedCard extends StatelessWidget {
                   child: Icon(
                     isDelivery ? Icons.local_shipping : Icons.person,
                     color: Colors.white,
-                    size: 22,
+                    size: 20,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -858,15 +890,15 @@ class SocialActivityFeedCard extends StatelessWidget {
                                 color: isDark
                                     ? Colors.white
                                     : const Color(0xFF0F172A),
-                                fontWeight: FontWeight.w900,
-                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13.5,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           const SizedBox(width: 4),
                           const Icon(Icons.verified,
-                              color: Color(0xFF79CBFF), size: 14),
+                              color: Color(0xFF22D3EE), size: 14),
                         ],
                       ),
                       const SizedBox(height: 2),
@@ -876,19 +908,23 @@ class SocialActivityFeedCard extends StatelessWidget {
                             isDelivery ? "Delivery Partner" : "Visitor Guest",
                             style: TextStyle(
                               color: isDelivery
-                                  ? const Color(0xFFEAB167)
-                                  : const Color(0xFF8DD7FF),
-                              fontSize: 11,
+                                  ? const Color(0xFFFBBF24)
+                                  : const Color(0xFF38BDF8),
+                              fontSize: 10.5,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                           const Text(" • ",
                               style: TextStyle(
-                                  color: Color(0xFF64748B), fontSize: 11)),
+                                  color: Color(0xFF64748B), fontSize: 10)),
                           Text(
                             time,
-                            style: const TextStyle(
-                                color: Color(0xFF94A3B8), fontSize: 11),
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.white.withOpacity(0.55)
+                                  : const Color(0xFF94A3B8),
+                              fontSize: 10.5,
+                            ),
                           ),
                         ],
                       ),
@@ -904,46 +940,41 @@ class SocialActivityFeedCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
 
-            // Social Content Box
+            // Destination Pill
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(14),
-                gradient: LinearGradient(
-                  colors: isDark
-                      ? [
-                          const Color(0xFF0F172A).withValues(alpha: 0.80),
-                          const Color(0xFF0B1120).withValues(alpha: 0.70),
-                        ]
-                      : [
-                          const Color(0xFFF1F5F9),
-                          const Color(0xFFE2E8F0).withValues(alpha: 0.8),
-                        ],
-                ),
+                borderRadius: BorderRadius.circular(12),
+                color: isDark
+                    ? Colors.white.withOpacity(0.04)
+                    : const Color(0xFFF1F5F9),
                 border: Border.all(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.10)
-                      : const Color(0xFFCBD5E1).withValues(alpha: 0.5),
+                  color: Colors.white.withOpacity(isDark ? 0.08 : 0.40),
                 ),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.location_on,
-                      color: Color(0xFF79CBFF), size: 16),
-                  const SizedBox(width: 6),
-                  const Text("Destinations: ",
-                      style: TextStyle(
-                          color: Color(0xFF94A3B8),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600)),
+                  const Icon(Icons.location_on_outlined,
+                      color: Color(0xFF22D3EE), size: 14),
+                  const SizedBox(width: 5),
+                  Text(
+                    "Destinations: ",
+                    style: TextStyle(
+                      color: isDark
+                          ? Colors.white.withOpacity(0.60)
+                          : const Color(0xFF64748B),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   Expanded(
                     child: Text(
                       destinations,
                       style: TextStyle(
                         color: isDark ? Colors.white : const Color(0xFF0F172A),
-                        fontSize: 12,
+                        fontSize: 11.5,
                         fontWeight: FontWeight.bold,
                       ),
                       overflow: TextOverflow.ellipsis,
@@ -959,7 +990,7 @@ class SocialActivityFeedCard extends StatelessWidget {
   }
 }
 
-/// Floating Liquid Glass Social Dock Navigation Bar (Equal Width Slots)
+/// Floating Liquid Glass Navigation Dock Bar
 class FloatingGlassDock extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -978,32 +1009,29 @@ class FloatingGlassDock extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      height: 68,
+      height: 64,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(34),
+        borderRadius: BorderRadius.circular(32),
         child: BackdropFilter(
-          filter: ui.ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+          filter: ui.ImageFilter.blur(sigmaX: 28, sigmaY: 28),
           child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(34),
+              borderRadius: BorderRadius.circular(32),
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Colors.white.withValues(alpha: isDark ? 0.17 : 0.66),
-                  isDark ? const Color(0xA516233A) : const Color(0xC2F6FAFF),
+                  Colors.white.withOpacity(isDark ? 0.08 : 0.75),
+                  Colors.white.withOpacity(isDark ? 0.03 : 0.45),
                 ],
               ),
               border: Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.24)
-                    : const Color(0x9693AACB),
+                color: Colors.white.withOpacity(isDark ? 0.14 : 0.45),
+                width: 1.0,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: isDark
-                      ? const Color(0xC9020816)
-                      : const Color(0x667698C3),
+                  color: Colors.black.withOpacity(isDark ? 0.40 : 0.08),
                   blurRadius: 24,
                   offset: const Offset(0, 8),
                 ),
@@ -1018,43 +1046,51 @@ class FloatingGlassDock extends StatelessWidget {
 
                   return Expanded(
                     child: GestureDetector(
-                      onTap: () => onTap(index),
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        onTap(index);
+                      },
                       behavior: HitTestBehavior.opaque,
                       child: Center(
                         child: item.isPrimary
                             ? Container(
-                                width: 48,
-                                height: 48,
+                                width: 44,
+                                height: 44,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   gradient: const LinearGradient(
                                     colors: [
-                                      Color(0xFF93D8FF),
-                                      Color(0xFF74D8BF)
+                                      Color(0xFF06B6D4),
+                                      Color(0xFF0E7490),
                                     ],
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const Color(0xFF5FA5E9)
-                                          .withValues(alpha: 0.50),
-                                      blurRadius: 16,
-                                      offset: const Offset(0, 4),
+                                      color: const Color(0xFF06B6D4)
+                                          .withOpacity(0.40),
+                                      blurRadius: 14,
+                                      offset: const Offset(0, 3),
                                     ),
                                   ],
                                 ),
                                 child: Icon(item.icon,
-                                    color: Colors.white, size: 26),
+                                    color: Colors.white, size: 23),
                               )
                             : AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
+                                duration: const Duration(milliseconds: 180),
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 6),
+                                    horizontal: 8, vertical: 5),
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? const Color(0xFF79CBFF)
-                                          .withValues(alpha: 0.16)
+                                      ? const Color(0xFF06B6D4).withOpacity(0.18)
                                       : Colors.transparent,
                                   borderRadius: BorderRadius.circular(16),
+                                  border: isSelected
+                                      ? Border.all(
+                                          color: const Color(0xFF06B6D4)
+                                              .withOpacity(0.35),
+                                        )
+                                      : null,
                                 ),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
@@ -1062,11 +1098,13 @@ class FloatingGlassDock extends StatelessWidget {
                                     Icon(
                                       item.icon,
                                       color: isSelected
-                                          ? const Color(0xFF79CBFF)
-                                          : const Color(0xFF8EA3BF),
-                                      size: 22,
+                                          ? const Color(0xFF22D3EE)
+                                          : (isDark
+                                              ? Colors.white.withOpacity(0.55)
+                                              : const Color(0xFF64748B)),
+                                      size: 20,
                                     ),
-                                    const SizedBox(height: 3),
+                                    const SizedBox(height: 2),
                                     Text(
                                       item.label,
                                       maxLines: 1,
@@ -1075,11 +1113,13 @@ class FloatingGlassDock extends StatelessWidget {
                                       style: TextStyle(
                                         inherit: false,
                                         color: isSelected
-                                            ? const Color(0xFF79CBFF)
-                                            : const Color(0xFF8EA3BF),
-                                        fontSize: 10,
+                                            ? const Color(0xFF22D3EE)
+                                            : (isDark
+                                                ? Colors.white.withOpacity(0.55)
+                                                : const Color(0xFF64748B)),
+                                        fontSize: 9.5,
                                         fontWeight: isSelected
-                                            ? FontWeight.w900
+                                            ? FontWeight.w700
                                             : FontWeight.w500,
                                       ),
                                     ),

@@ -6,11 +6,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   /// Current PC Wi-Fi IP (update if Windows IP changes).
-  static const String lanWifiUrl = "http://10.145.198.227:3000/api";
-  static const String lanEthernetUrl = "http://10.64.107.134:3000/api";
+  static const String lanWifiUrl = "http://10.184.161.227:3000/api";
+  static const String lanEthernetUrl = "http://172.21.127.119:3000/api";
   static const String emulatorUrl = "http://10.0.2.2:3000/api";
   static const String localhostUrl = "http://127.0.0.1:3000/api";
   static const List<String> _legacyUrls = [
+    "http://10.145.198.227:3000/api",
     "http://10.86.110.227:3000/api",
     "http://10.64.107.135:3000/api",
     "http://10.64.107.134:3000/api",
@@ -66,6 +67,11 @@ class ApiService {
 
     if (saved != null) {
       final normalized = normalizeBaseUrl(saved);
+      // If the saved URL is an old legacy URL, update it to current platformDefaultUrl
+      if (_legacyUrls.contains(normalized)) {
+        await setBaseUrl(platformDefaultUrl);
+        return platformDefaultUrl;
+      }
       _cachedBaseUrl = normalized;
       return normalized;
     }
@@ -126,17 +132,37 @@ class ApiService {
     required String password,
   }) async {
     final baseUrl = await getBaseUrl();
-    final url = Uri.parse('$baseUrl/auth/login');
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'organizationCode': organizationCode,
-        'username': username,
-        'password': password,
-      }),
-    ).timeout(const Duration(seconds: 8));
-    return jsonDecode(response.body);
+    try {
+      final url = Uri.parse('$baseUrl/auth/login');
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'organizationCode': organizationCode,
+          'username': username,
+          'password': password,
+        }),
+      ).timeout(const Duration(seconds: 8));
+      return jsonDecode(response.body);
+    } catch (_) {
+      // If primary URL failed, try to auto-discover any available local server
+      final workingUrl = await discoverWorkingUrl();
+      if (workingUrl != null && workingUrl != baseUrl) {
+        await setBaseUrl(workingUrl);
+        final fallbackUrl = Uri.parse('$workingUrl/auth/login');
+        final response = await http.post(
+          fallbackUrl,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'organizationCode': organizationCode,
+            'username': username,
+            'password': password,
+          }),
+        ).timeout(const Duration(seconds: 8));
+        return jsonDecode(response.body);
+      }
+      rethrow;
+    }
   }
 
   // 2. Request SMTP Password Reset OTP

@@ -8,7 +8,6 @@ import '../../core/glass_widgets.dart';
 import '../../core/pdf_generator.dart';
 import '../../core/theme_controller.dart';
 import '../auth/login_screen.dart';
-import '../auth/reset_password_screen.dart';
 import '../gatekeeper/gatekeeper_screen.dart';
 import '../member/member_screen.dart';
 
@@ -500,11 +499,13 @@ class _AdminScreenState extends State<AdminScreen> {
     final isDark = ThemeController.isDarkMode.value;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0A1018) : const Color(0xFFF3F5F8),
+      backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
       extendBody: true,
       appBar: AppBar(
-        backgroundColor: isDark ? const Color(0xFF141C28) : Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        surfaceTintColor: Colors.transparent,
         titleSpacing: 16,
         title: Row(
           children: [
@@ -512,10 +513,13 @@ class _AdminScreenState extends State<AdminScreen> {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(9),
-                color: const Color(0xFF14B8A6),
+                borderRadius: BorderRadius.circular(10),
+                color: const Color(0xFF06B6D4).withOpacity(0.18),
+                border: Border.all(
+                  color: const Color(0xFF06B6D4).withOpacity(0.35),
+                ),
               ),
-              child: const Icon(Icons.shield, color: Color(0xFF06201C), size: 18),
+              child: const Icon(Icons.shield_outlined, color: Color(0xFF22D3EE), size: 18),
             ),
             const SizedBox(width: 10),
             Expanded(

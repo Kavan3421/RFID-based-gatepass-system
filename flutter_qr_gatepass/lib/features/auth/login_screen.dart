@@ -140,7 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   GlassTextField(
                     controller: urlController,
                     labelText: "Server API Base URL",
-                    hintText: "http://10.145.198.227:3000/api",
+                    hintText: "http://10.184.161.227:3000/api",
                     prefixIcon: const Icon(Icons.link, color: Color(0xFF06B6D4), size: 18),
                   ),
                   const SizedBox(height: 10),
@@ -153,12 +153,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     runSpacing: 6,
                     children: [
                       ActionChip(
-                        label: const Text("This PC Wi-Fi (10.145.198.227)", style: TextStyle(fontSize: 11, color: Colors.white)),
+                        label: const Text("This PC Wi-Fi (10.184.161.227)", style: TextStyle(fontSize: 11, color: Colors.white)),
                         backgroundColor: const Color(0xFF1E293B),
                         onPressed: () => setModalState(() => urlController.text = ApiService.lanWifiUrl),
                       ),
                       ActionChip(
-                        label: const Text("LAN (10.64.107.134)", style: TextStyle(fontSize: 11, color: Colors.white)),
+                        label: const Text("Ethernet (172.21.127.119)", style: TextStyle(fontSize: 11, color: Colors.white)),
                         backgroundColor: const Color(0xFF1E293B),
                         onPressed: () => setModalState(() => urlController.text = ApiService.lanEthernetUrl),
                       ),
@@ -262,7 +262,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final isDark = ThemeController.isDarkMode.value;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0A1018) : const Color(0xFFF3F5F8),
+      backgroundColor: Colors.transparent,
       body: AmbientCanvasBackground(
         child: SafeArea(
           child: Center(

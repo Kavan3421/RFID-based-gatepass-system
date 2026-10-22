@@ -115,17 +115,19 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF070A13),
+      backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F172A).withOpacity(0.8),
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           "Admin Password Reset",
-          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900),
+          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
         ),
       ),
       body: AmbientCanvasBackground(

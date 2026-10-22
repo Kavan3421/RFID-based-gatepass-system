@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/api_service.dart';
@@ -177,21 +178,34 @@ class _GatekeeperScreenState extends State<GatekeeperScreen> {
     final isDark = ThemeController.isDarkMode.value;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0A1018) : const Color(0xFFF3F5F8),
+      backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
       extendBody: true,
       appBar: AppBar(
-        backgroundColor: isDark ? const Color(0xFF141C28) : Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        surfaceTintColor: Colors.transparent,
         title: Row(
           children: [
-            const Icon(Icons.shield, color: Color(0xFF14B8A6), size: 20),
-            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: const Color(0xFF06B6D4).withOpacity(0.18),
+                border: Border.all(
+                  color: const Color(0xFF06B6D4).withOpacity(0.35),
+                ),
+              ),
+              child: const Icon(Icons.shield_outlined, color: Color(0xFF22D3EE), size: 18),
+            ),
+            const SizedBox(width: 10),
             Text(
               "Gatekeeper",
               style: TextStyle(
                 color: isDark ? Colors.white : const Color(0xFF0F172A),
                 fontSize: 17,
                 fontWeight: FontWeight.w700,
+                letterSpacing: -0.2,
               ),
             ),
           ],
@@ -206,7 +220,10 @@ class _GatekeeperScreenState extends State<GatekeeperScreen> {
             tooltip: "Toggle Theme",
             onPressed: () => ThemeController.toggleTheme(),
           ),
-          IconButton(icon: const Icon(Icons.logout, color: Colors.redAccent, size: 20), onPressed: _logout),
+          IconButton(
+            icon: const Icon(Icons.logout, color: Color(0xFFF43F5E), size: 20),
+            onPressed: _logout,
+          ),
         ],
       ),
       bottomNavigationBar: FloatingGlassDock(
@@ -279,298 +296,176 @@ class _GatekeeperScreenState extends State<GatekeeperScreen> {
           ),
           const SizedBox(height: 16),
 
-          // Massive Tactile Tile 1: Scan Guest Entry Pass
-          GestureDetector(
+          // Action Card 1: Scan Guest Entry Pass
+          _buildActionCard(
+            title: "SCAN GUEST ENTRY",
+            subtitle: "Validate visitor pass & permit entry",
+            badgeLabel: "IN",
+            accentColor: const Color(0xFF06B6D4),
+            icon: Icons.login,
             onTap: () => setState(() {
               _scanType = 'ENTRY';
               _activeView = 1;
             }),
-            behavior: HitTestBehavior.opaque,
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(26),
-                gradient: const LinearGradient(
-                  colors: [
-                    Color(0xFF0E253A),
-                    Color(0xFF0F172A),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                border: Border.all(
-                  color: const Color(0xFF06B6D4).withValues(alpha: 0.6),
-                  width: 1.5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF06B6D4).withValues(alpha: 0.30),
-                    blurRadius: 20,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 58,
-                    height: 58,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(18),
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF06B6D4), Color(0xFF2563EB)],
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF06B6D4).withValues(alpha: 0.50),
-                          blurRadius: 16,
-                        ),
-                      ],
-                    ),
-                    child: const Icon(Icons.login, size: 30, color: Colors.white),
-                  ),
-                  const SizedBox(width: 16),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              "SCAN GUEST ENTRY",
-                              style: TextStyle(
-                                inherit: false,
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0.2,
-                              ),
-                            ),
-                            SizedBox(width: 6),
-                            GlassPillChip(label: "IN", color: Color(0xFF06B6D4)),
-                          ],
-                        ),
-                        SizedBox(height: 3),
-                        Text(
-                          "Validate pass & permit entry",
-                          style: TextStyle(
-                            inherit: false,
-                            color: Color(0xFF22D3EE),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(Icons.arrow_forward_ios, color: Color(0xFF22D3EE), size: 16),
-                ],
-              ),
-            ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
 
-          // Massive Tactile Tile 2: Scan Guest Exit Pass
-          GestureDetector(
+          // Action Card 2: Scan Guest Exit Pass
+          _buildActionCard(
+            title: "SCAN GUEST EXIT",
+            subtitle: "Log visitor departure & checkout",
+            badgeLabel: "OUT",
+            accentColor: const Color(0xFFF59E0B),
+            icon: Icons.logout,
             onTap: () => setState(() {
               _scanType = 'EXIT';
               _activeView = 1;
             }),
-            behavior: HitTestBehavior.opaque,
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(26),
-                gradient: const LinearGradient(
-                  colors: [
-                    Color(0xFF2E1C1A),
-                    Color(0xFF0F172A),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                border: Border.all(
-                  color: const Color(0xFFF59E0B).withValues(alpha: 0.6),
-                  width: 1.5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFF59E0B).withValues(alpha: 0.25),
-                    blurRadius: 20,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 58,
-                    height: 58,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(18),
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFF59E0B), Color(0xFFE11D48)],
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFF59E0B).withValues(alpha: 0.50),
-                          blurRadius: 16,
-                        ),
-                      ],
-                    ),
-                    child: const Icon(Icons.logout, size: 30, color: Colors.white),
-                  ),
-                  const SizedBox(width: 16),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              "SCAN GUEST EXIT",
-                              style: TextStyle(
-                                inherit: false,
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0.2,
-                              ),
-                            ),
-                            SizedBox(width: 6),
-                            GlassPillChip(label: "OUT", color: Color(0xFFF59E0B)),
-                          ],
-                        ),
-                        SizedBox(height: 3),
-                        Text(
-                          "Log visitor exit & checkout",
-                          style: TextStyle(
-                            inherit: false,
-                            color: Color(0xFFFCD34D),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(Icons.arrow_forward_ios, color: Color(0xFFFCD34D), size: 16),
-                ],
-              ),
-            ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
 
-          // Massive Tactile Tile 3: Delivery Entry
-          GestureDetector(
+          // Action Card 3: Rapid Delivery Entry
+          _buildActionCard(
+            title: "RAPID DELIVERY ENTRY",
+            subtitle: "Fast 2-tap multi-unit courier logger",
+            badgeLabel: "COURIER",
+            accentColor: const Color(0xFF818CF8),
+            icon: Icons.local_shipping_outlined,
             onTap: () => setState(() => _activeView = 2),
-            behavior: HitTestBehavior.opaque,
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(26),
-                gradient: const LinearGradient(
-                  colors: [
-                    Color(0xFF1E2442),
-                    Color(0xFF0F172A),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                border: Border.all(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.6),
-                  width: 1.5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF3B82F6).withValues(alpha: 0.25),
-                    blurRadius: 20,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 58,
-                    height: 58,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(18),
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF3B82F6), Color(0xFF4F46E5)],
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF3B82F6).withValues(alpha: 0.50),
-                          blurRadius: 16,
-                        ),
-                      ],
-                    ),
-                    child: const Icon(Icons.local_shipping, size: 30, color: Colors.white),
-                  ),
-                  const SizedBox(width: 16),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "RAPID DELIVERY ENTRY",
-                          style: TextStyle(
-                            inherit: false,
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.2,
-                          ),
-                        ),
-                        SizedBox(height: 3),
-                        Text(
-                          "Fast 2-tap multi-unit package logger",
-                          style: TextStyle(
-                            inherit: false,
-                            color: Color(0xFF93C5FD),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(Icons.arrow_forward_ios, color: Color(0xFF93C5FD), size: 16),
-                ],
-              ),
-            ),
           ),
         ],
       ),
     );
   }
 
+  Widget _buildActionCard({
+    required String title,
+    required String subtitle,
+    required String badgeLabel,
+    required Color accentColor,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return FrostedGlassCard(
+      borderRadius: 22,
+      padding: EdgeInsets.zero,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
+        borderRadius: BorderRadius.circular(22),
+        splashColor: accentColor.withOpacity(0.12),
+        highlightColor: accentColor.withOpacity(0.06),
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Row(
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  gradient: LinearGradient(
+                    colors: [
+                      accentColor.withOpacity(0.25),
+                      accentColor.withOpacity(0.10),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  border: Border.all(
+                    color: accentColor.withOpacity(0.40),
+                    width: 1.0,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: accentColor.withOpacity(0.20),
+                      blurRadius: 14,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Icon(icon, size: 24, color: accentColor),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            title,
+                            style: const TextStyle(
+                              inherit: false,
+                              color: Colors.white,
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.3,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        GlassPillChip(label: badgeLabel, color: accentColor),
+                      ],
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        inherit: false,
+                        color: Colors.white.withOpacity(0.65),
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.white.withOpacity(0.35),
+                size: 14,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildScanView() {
     final isExit = _scanType == 'EXIT';
-    Color bannerBg = Colors.red.withValues(alpha: 0.20);
-    Color bannerBorder = Colors.red.withValues(alpha: 0.55);
-    Color bannerText = Colors.redAccent;
+    Color bannerBg = const Color(0xFFF43F5E).withOpacity(0.18);
+    Color bannerBorder = const Color(0xFFF43F5E).withOpacity(0.40);
+    Color bannerText = const Color(0xFFFB7185);
 
     if (_scanStatusCode == "VERIFIED" || _scanStatusCode == "EXIT_RECORDED") {
-      bannerBg = Colors.green.withValues(alpha: 0.20);
-      bannerBorder = Colors.green.withValues(alpha: 0.55);
-      bannerText = Colors.greenAccent;
+      bannerBg = const Color(0xFF10B981).withOpacity(0.18);
+      bannerBorder = const Color(0xFF10B981).withOpacity(0.40);
+      bannerText = const Color(0xFF34D399);
     } else if (_scanStatusCode == "NOT_YET_VALID") {
-      bannerBg = Colors.cyan.withValues(alpha: 0.20);
-      bannerBorder = Colors.cyan.withValues(alpha: 0.55);
-      bannerText = Colors.cyanAccent;
+      bannerBg = const Color(0xFF06B6D4).withOpacity(0.18);
+      bannerBorder = const Color(0xFF06B6D4).withOpacity(0.40);
+      bannerText = const Color(0xFF22D3EE);
     } else if (_scanStatusCode == "ALREADY_USED" || _scanStatusCode == "ALREADY_EXITED" || _scanStatusCode == "ALREADY_INSIDE") {
-      bannerBg = Colors.amber.withValues(alpha: 0.20);
-      bannerBorder = Colors.amber.withValues(alpha: 0.55);
-      bannerText = Colors.amberAccent;
+      bannerBg = const Color(0xFFF59E0B).withOpacity(0.18);
+      bannerBorder = const Color(0xFFF59E0B).withOpacity(0.40);
+      bannerText = const Color(0xFFFBBF24);
     }
 
     return SingleChildScrollView(
       physics: const ClampingScrollPhysics(),
       padding: const EdgeInsets.only(bottom: 90),
       child: FrostedGlassCard(
-        borderRadius: 28,
+        borderRadius: 24,
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -586,48 +481,56 @@ class _GatekeeperScreenState extends State<GatekeeperScreen> {
                   icon: const Icon(Icons.arrow_back, color: Color(0xFF94A3B8), size: 18),
                   label: const Text("Main Menu", style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12, fontWeight: FontWeight.bold)),
                 ),
-                // Mode Toggle Switch
+                // Mode Toggle Capsule
                 Container(
                   padding: const EdgeInsets.all(3),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0F172A),
+                    color: Colors.white.withOpacity(0.04),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                    border: Border.all(color: Colors.white.withOpacity(0.12)),
                   ),
                   child: Row(
                     children: [
                       GestureDetector(
-                        onTap: () => setState(() => _scanType = 'ENTRY'),
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          setState(() => _scanType = 'ENTRY');
+                        },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: !isExit ? const Color(0xFF06B6D4) : Colors.transparent,
-                            borderRadius: BorderRadius.circular(12),
+                            color: !isExit ? const Color(0xFF06B6D4).withOpacity(0.25) : Colors.transparent,
+                            borderRadius: BorderRadius.circular(13),
+                            border: !isExit ? Border.all(color: const Color(0xFF06B6D4).withOpacity(0.45)) : null,
                           ),
                           child: Text(
                             "Scan In",
                             style: TextStyle(
-                              color: !isExit ? Colors.white : const Color(0xFF94A3B8),
+                              color: !isExit ? Colors.white : Colors.white.withOpacity(0.55),
                               fontSize: 11,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: !isExit ? FontWeight.w700 : FontWeight.w500,
                             ),
                           ),
                         ),
                       ),
                       GestureDetector(
-                        onTap: () => setState(() => _scanType = 'EXIT'),
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          setState(() => _scanType = 'EXIT');
+                        },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: isExit ? const Color(0xFFF59E0B) : Colors.transparent,
-                            borderRadius: BorderRadius.circular(12),
+                            color: isExit ? const Color(0xFFF59E0B).withOpacity(0.25) : Colors.transparent,
+                            borderRadius: BorderRadius.circular(13),
+                            border: isExit ? Border.all(color: const Color(0xFFF59E0B).withOpacity(0.45)) : null,
                           ),
                           child: Text(
                             "Scan Out",
                             style: TextStyle(
-                              color: isExit ? Colors.white : const Color(0xFF94A3B8),
+                              color: isExit ? Colors.white : Colors.white.withOpacity(0.55),
                               fontSize: 11,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: isExit ? FontWeight.w700 : FontWeight.w500,
                             ),
                           ),
                         ),
@@ -753,9 +656,19 @@ class _GatekeeperScreenState extends State<GatekeeperScreen> {
                   LiquidGlassButton(
                     onPressed: () => setState(() => _isCameraActive = !_isCameraActive),
                     gradient: _isCameraActive
-                        ? const LinearGradient(colors: [Colors.redAccent, Colors.red])
+                        ? LinearGradient(
+                            colors: [
+                              const Color(0xFFF43F5E).withOpacity(0.85),
+                              const Color(0xFFBE123C).withOpacity(0.90),
+                            ],
+                          )
                         : isExit
-                            ? const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFE11D48)])
+                            ? LinearGradient(
+                                colors: [
+                                  const Color(0xFFF59E0B).withOpacity(0.85),
+                                  const Color(0xFFD97706).withOpacity(0.90),
+                                ],
+                              )
                             : null,
                     height: 48,
                     label: _isCameraActive ? "Close Camera View" : "Start Live ${isExit ? 'Exit' : 'Entry'} Auto-Scanner",
@@ -777,7 +690,14 @@ class _GatekeeperScreenState extends State<GatekeeperScreen> {
 
             LiquidGlassButton(
               onPressed: _submitScan,
-              gradient: isExit ? const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFE11D48)]) : null,
+              gradient: isExit
+                  ? LinearGradient(
+                      colors: [
+                        const Color(0xFFF59E0B).withOpacity(0.85),
+                        const Color(0xFFD97706).withOpacity(0.90),
+                      ],
+                    )
+                  : null,
               label: isExit ? "Validate & Record Exit" : "Validate & Permit Entry",
               icon: isExit ? Icons.door_front_door_outlined : Icons.check_circle_outline,
             ),

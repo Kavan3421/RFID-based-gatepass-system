@@ -389,21 +389,34 @@ class _MemberScreenState extends State<MemberScreen> {
     final isDark = ThemeController.isDarkMode.value;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0A1018) : const Color(0xFFF3F5F8),
+      backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
       extendBody: true,
       appBar: AppBar(
-        backgroundColor: isDark ? const Color(0xFF141C28) : Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        surfaceTintColor: Colors.transparent,
         title: Row(
           children: [
-            const Icon(Icons.qr_code_2, color: Color(0xFF14B8A6), size: 22),
-            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: const Color(0xFF06B6D4).withOpacity(0.18),
+                border: Border.all(
+                  color: const Color(0xFF06B6D4).withOpacity(0.35),
+                ),
+              ),
+              child: const Icon(Icons.qr_code_2, color: Color(0xFF22D3EE), size: 20),
+            ),
+            const SizedBox(width: 10),
             Text(
-              "Resident",
+              "Resident Portal",
               style: TextStyle(
                 color: isDark ? Colors.white : const Color(0xFF0F172A),
                 fontSize: 17,
                 fontWeight: FontWeight.w700,
+                letterSpacing: -0.2,
               ),
             ),
           ],

@@ -58,7 +58,7 @@ class _GatifyAppState extends State<GatifyApp> {
     return ValueListenableBuilder<bool>(
       valueListenable: ThemeController.isDarkMode,
       builder: (context, isDark, _) {
-        final lightScheme = const ColorScheme.light(
+        const lightScheme = ColorScheme.light(
           primary: Color(0xFF3B9DF3),
           secondary: Color(0xFF46CAA6),
           surface: Color(0xFFF5F9FF),
@@ -67,7 +67,7 @@ class _GatifyAppState extends State<GatifyApp> {
           onSurface: Color(0xFF132645),
         );
 
-        final darkScheme = const ColorScheme.dark(
+        const darkScheme = ColorScheme.dark(
           primary: Color(0xFF79CBFF),
           secondary: Color(0xFF72DBBF),
           surface: Color(0xFF122338),
@@ -86,16 +86,16 @@ class _GatifyAppState extends State<GatifyApp> {
             scaffoldBackgroundColor: const Color(0xFFEEF3FB),
             primaryColor: lightScheme.primary,
             colorScheme: lightScheme,
-            appBarTheme: AppBarTheme(
+            appBarTheme: const AppBarTheme(
               backgroundColor: Colors.transparent,
               elevation: 0,
               centerTitle: false,
               surfaceTintColor: Colors.transparent,
-              titleTextStyle: const TextStyle(
+              titleTextStyle: TextStyle(
                   color: Color(0xFF102347),
                   fontSize: 17,
                   fontWeight: FontWeight.w700),
-              iconTheme: const IconThemeData(color: Color(0xFF102347)),
+              iconTheme: IconThemeData(color: Color(0xFF102347)),
             ),
             cardColor: const Color(0x80FFFFFF),
             dividerColor: const Color(0x6689A1C2),
@@ -139,19 +139,19 @@ class _GatifyAppState extends State<GatifyApp> {
           darkTheme: ThemeData(
             brightness: Brightness.dark,
             fontFamily: 'SF Pro Text',
-            scaffoldBackgroundColor: const Color(0xFF070D18),
+            scaffoldBackgroundColor: const Color(0xFF070A13),
             primaryColor: darkScheme.primary,
             colorScheme: darkScheme,
-            appBarTheme: AppBarTheme(
+            appBarTheme: const AppBarTheme(
               backgroundColor: Colors.transparent,
               elevation: 0,
               centerTitle: false,
               surfaceTintColor: Colors.transparent,
-              titleTextStyle: const TextStyle(
+              titleTextStyle: TextStyle(
                   color: Color(0xFFF4F8FF),
                   fontSize: 17,
                   fontWeight: FontWeight.w700),
-              iconTheme: const IconThemeData(color: Color(0xFFF4F8FF)),
+              iconTheme: IconThemeData(color: Color(0xFFF4F8FF)),
             ),
             cardColor: const Color(0x801B2639),
             dividerColor: const Color(0x66B4CBE8),
