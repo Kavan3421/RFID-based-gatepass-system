@@ -12,8 +12,8 @@ export function ThemeProvider({ children }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Read stored theme with backward-compatible fallback
-    const savedTheme = localStorage.getItem("gatify_theme") || localStorage.getItem("surveileye_theme");
+    // Read stored theme
+    const savedTheme = localStorage.getItem("gatify_theme");
     if (savedTheme === "light" || savedTheme === "dark") {
       setTheme(savedTheme);
     } else {

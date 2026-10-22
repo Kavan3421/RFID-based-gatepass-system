@@ -343,77 +343,61 @@ export default function GatekeeperPage() {
         </button>
       </div>
 
-      {/* HOME MENU: 3 Massive Tactile Action Tiles */}
+      {/* HOME MENU: 3 Elevated Rectangular Glass Action Cards */}
       {activeTab === "HOME" && (
-        <div className="grid grid-cols-1 gap-4 pt-1">
-          {/* Tile 1: Scan Guest Entry Pass */}
-          <button
-            onClick={() => {
-              setScanMode("ENTRY");
-              setActiveTab("SCAN");
-            }}
-            className="glass-tactile-tile w-full py-6 px-5 rounded-2xl flex items-center justify-between text-left group border border-teal-500/25"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/30 to-blue-600/40 border border-cyan-400/50 flex items-center justify-center text-cyan-300 shadow-xl shadow-cyan-500/30 group-hover:scale-105 transition-transform shrink-0">
+        <div className="space-y-5 pt-1">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {/* Card 1: Scan Entry Pass */}
+            <button
+              onClick={() => {
+                setScanMode("ENTRY");
+                setActiveTab("SCAN");
+              }}
+              className="glass-elevated liquid-glass-surface rounded-3xl p-6 sm:p-8 flex flex-col items-center text-center group liquid-touch-spring transition-all border-t border-l border-white/20 hover:border-cyan-400/40 cursor-pointer shadow-lg"
+            >
+              <div className="w-16 h-16 rounded-2xl bg-cyan-500/15 border border-cyan-400/30 flex items-center justify-center text-cyan-300 mb-5 group-hover:scale-105 transition-transform shadow-[0_0_24px_rgba(6,182,212,0.25)]">
                 <LogIn className="w-8 h-8" />
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xl sm:text-2xl font-black text-white block tracking-tight">Scan Guest Entry</span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">IN</span>
-                </div>
-                <span className="text-xs text-cyan-300 font-medium block mt-0.5">Validate pass & permit campus entry</span>
+              <div className="flex items-center gap-2 mb-1.5">
+                <h3 className="text-xl font-semibold text-white tracking-tight">Scan Entry Pass</h3>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">IN</span>
               </div>
-            </div>
-            <div className="w-9 h-9 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
-              <QrCode className="w-5 h-5" />
-            </div>
-          </button>
+              <p className="text-xs text-white/70 leading-relaxed mt-1">Validate guest pass & permit campus entry</p>
+            </button>
 
-          {/* Tile 2: Scan Guest Exit Pass */}
-          <button
-            onClick={() => {
-              setScanMode("EXIT");
-              setActiveTab("SCAN");
-            }}
-            className="glass-tactile-tile w-full py-8 px-6 rounded-3xl flex items-center justify-between text-white spring-press text-left group border border-amber-500/30 hover:border-amber-400/60"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500/30 to-rose-600/40 border border-amber-400/50 flex items-center justify-center text-amber-300 shadow-xl shadow-amber-500/30 group-hover:scale-105 transition-transform shrink-0">
+            {/* Card 2: Scan Exit Pass */}
+            <button
+              onClick={() => {
+                setScanMode("EXIT");
+                setActiveTab("SCAN");
+              }}
+              className="glass-elevated liquid-glass-surface rounded-3xl p-6 sm:p-8 flex flex-col items-center text-center group liquid-touch-spring transition-all border-t border-l border-white/20 hover:border-amber-400/40 cursor-pointer shadow-lg"
+            >
+              <div className="w-16 h-16 rounded-2xl bg-amber-500/15 border border-amber-400/30 flex items-center justify-center text-amber-300 mb-5 group-hover:scale-105 transition-transform shadow-[0_0_24px_rgba(245,158,11,0.25)]">
                 <DoorOpen className="w-8 h-8" />
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xl sm:text-2xl font-black text-white block tracking-tight">Scan Guest Exit</span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/30">OUT</span>
-                </div>
-                <span className="text-xs text-amber-300 font-medium block mt-0.5">Log visitor exit & checkout status</span>
+              <div className="flex items-center gap-2 mb-1.5">
+                <h3 className="text-xl font-semibold text-white tracking-tight">Scan Exit Pass</h3>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">OUT</span>
               </div>
-            </div>
-            <div className="w-9 h-9 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-              <QrCode className="w-5 h-5" />
-            </div>
-          </button>
+              <p className="text-xs text-white/70 leading-relaxed mt-1">Log visitor exit & checkout status</p>
+            </button>
 
-          {/* Tile 3: Delivery Entry */}
-          <button
-            onClick={() => setActiveTab("DELIVERY")}
-            className="glass-tactile-tile w-full py-8 px-6 rounded-3xl flex items-center justify-between text-white spring-press text-left group border border-blue-500/30 hover:border-blue-400/60"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/30 to-indigo-600/40 border border-blue-400/50 flex items-center justify-center text-blue-300 shadow-xl shadow-blue-500/30 group-hover:scale-105 transition-transform shrink-0">
+            {/* Card 3: Add Delivery Entry */}
+            <button
+              onClick={() => setActiveTab("DELIVERY")}
+              className="glass-elevated liquid-glass-surface rounded-3xl p-6 sm:p-8 flex flex-col items-center text-center group liquid-touch-spring transition-all border-t border-l border-white/20 hover:border-indigo-400/40 cursor-pointer shadow-lg"
+            >
+              <div className="w-16 h-16 rounded-2xl bg-indigo-500/15 border border-indigo-400/30 flex items-center justify-center text-indigo-300 mb-5 group-hover:scale-105 transition-transform shadow-[0_0_24px_rgba(99,102,241,0.25)]">
                 <Truck className="w-8 h-8" />
               </div>
-              <div>
-                <span className="text-xl sm:text-2xl font-black text-white block tracking-tight">Rapid Delivery Entry</span>
-                <span className="text-xs text-blue-300 font-medium block mt-0.5">2-tap multi-destination logging</span>
+              <div className="flex items-center gap-2 mb-1.5">
+                <h3 className="text-xl font-semibold text-white tracking-tight">Add Delivery Entry</h3>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">COURIER</span>
               </div>
-            </div>
-            <div className="w-9 h-9 rounded-full bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400">
-              <Plus className="w-5 h-5" />
-            </div>
-          </button>
+              <p className="text-xs text-white/70 leading-relaxed mt-1">Fast multi-destination delivery logging</p>
+            </button>
+          </div>
 
           {/* Secondary Action: Today's Gate Entries */}
           <button
@@ -421,7 +405,7 @@ export default function GatekeeperPage() {
               setActiveTab("LOGS");
               fetchTodayLogs();
             }}
-            className="glass-plank w-full py-4 px-6 rounded-2xl text-slate-300 font-bold text-sm flex items-center justify-center gap-2.5 spring-press"
+            className="glass-plank liquid-glass-surface liquid-touch-spring w-full py-4 px-6 rounded-2xl text-white/80 hover:text-white font-medium text-sm flex items-center justify-center gap-2.5 transition-colors border-t border-white/15"
           >
             <ListFilter className="w-4 h-4 text-cyan-400" />
             <span>View Today's Gate Entries</span>
@@ -431,27 +415,27 @@ export default function GatekeeperPage() {
 
       {/* SCAN QR SCREEN */}
       {activeTab === "SCAN" && (
-        <div className="glass-floating rounded-3xl p-6 space-y-6 text-left animate-in fade-in zoom-in-95 duration-200">
+        <div className="glass-floating rounded-3xl p-6 space-y-6 text-left animate-in fade-in duration-200">
           <div className="flex items-center justify-between">
             <button
               onClick={() => {
                 stopCameraStream();
                 setActiveTab("HOME");
               }}
-              className="text-xs font-bold text-slate-400 hover:text-white flex items-center gap-1.5 spring-press"
+              className="btn-liquid-secondary text-xs font-semibold text-white/80 hover:text-white flex items-center gap-1.5 px-3 py-1.5 rounded-xl shadow-md"
             >
-              <ArrowLeft className="w-4 h-4" /> Back to Main Menu
+              <ArrowLeft className="w-4 h-4 text-cyan-400" /> Back to Main Menu
             </button>
 
             {/* Mode Switcher Pills */}
-            <div className="flex items-center gap-1.5 p-1 rounded-2xl glass-sheet">
+            <div className="flex items-center gap-1 p-1 rounded-2xl bg-white/[0.03] border border-white/10">
               <button
                 type="button"
                 onClick={() => setScanMode("ENTRY")}
-                className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all spring-press ${
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all ${
                   scanMode === "ENTRY"
-                    ? "bg-cyan-500 text-white shadow-lg shadow-cyan-500/30"
-                    : "text-slate-400 hover:text-white"
+                    ? "bg-white/10 text-white font-semibold border border-white/20 shadow-sm"
+                    : "text-white/60 hover:text-white"
                 }`}
               >
                 Scan Entry
@@ -459,10 +443,10 @@ export default function GatekeeperPage() {
               <button
                 type="button"
                 onClick={() => setScanMode("EXIT")}
-                className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all spring-press ${
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all ${
                   scanMode === "EXIT"
-                    ? "bg-amber-500 text-white shadow-lg shadow-amber-500/30"
-                    : "text-slate-400 hover:text-white"
+                    ? "bg-white/10 text-white font-semibold border border-white/20 shadow-sm"
+                    : "text-white/60 hover:text-white"
                 }`}
               >
                 Scan Exit
@@ -471,14 +455,14 @@ export default function GatekeeperPage() {
           </div>
 
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-black text-white flex items-center gap-2.5">
+            <h2 className="text-xl font-semibold text-white tracking-tight flex items-center gap-2.5">
               <QrCode className={`w-6 h-6 ${scanMode === "ENTRY" ? "text-cyan-400" : "text-amber-400"}`} />
               <span>{scanMode === "ENTRY" ? "Guest Entry Scanner" : "Guest Exit / Checkout Scanner"}</span>
             </h2>
           </div>
 
           {/* Mode Banner Indicator */}
-          <div className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center justify-between border ${
+          <div className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-between border ${
             scanMode === "ENTRY"
               ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-300"
               : "bg-amber-500/10 border-amber-500/30 text-amber-300"
@@ -492,7 +476,7 @@ export default function GatekeeperPage() {
 
           {scanMessage.text && (
             <div
-              className={`p-4 rounded-2xl border text-sm font-bold flex items-center gap-3 animate-in fade-in zoom-in-95 duration-200 ${
+              className={`p-4 rounded-2xl border text-sm font-semibold flex items-center gap-3 animate-in fade-in duration-200 ${
                 scanMessage.code === "VERIFIED" || scanMessage.code === "EXIT_RECORDED"
                   ? "glass-badge-emerald"
                   : scanMessage.code === "NOT_YET_VALID"
@@ -526,7 +510,7 @@ export default function GatekeeperPage() {
                   }`}>
                     <Camera className="w-7 h-7 animate-pulse" />
                   </div>
-                  <p className="text-xs text-slate-300 font-medium">Ready for {scanMode === "ENTRY" ? "Entry" : "Exit"} camera auto-scanning.</p>
+                  <p className="text-xs text-white/70 font-medium">Ready for {scanMode === "ENTRY" ? "Entry" : "Exit"} camera auto-scanning.</p>
                 </div>
               )}
 
@@ -544,39 +528,33 @@ export default function GatekeeperPage() {
             <button
               type="button"
               onClick={toggleCameraScanner}
-              className={`w-full py-3.5 px-4 rounded-2xl font-black text-xs flex items-center justify-center gap-2 shadow-lg spring-press ${
+              className={`w-full py-3.5 px-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 shadow-xl spring-press ${
                 isCameraActive
-                  ? "bg-rose-600 hover:bg-rose-500 text-white shadow-rose-600/30"
-                  : scanMode === "ENTRY"
-                  ? "btn-liquid-primary text-white"
-                  : "bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 text-white"
+                  ? "bg-rose-600 hover:bg-rose-500 text-white shadow-rose-600/35 border-t border-white/40"
+                  : "btn-liquid-primary"
               }`}
             >
-              <Camera className="w-4 h-4" />
+              <Camera className="w-5 h-5" />
               <span>{isCameraActive ? "Stop Camera Scanner" : `Start Live ${scanMode === "ENTRY" ? "Entry" : "Exit"} Scanner`}</span>
             </button>
           </div>
 
           <form onSubmit={handleScanSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300">Manual Pass Code Input</label>
+              <label className="text-xs font-medium text-white/80 uppercase tracking-wider">Manual Pass Code Input</label>
               <input
                 type="text"
                 required
                 placeholder="Scan QR or type token (e.g. QGP-8A9F21B3)"
                 value={qrCodeInput}
                 onChange={(e) => setQrCodeInput(e.target.value.toUpperCase())}
-                className="glass-input w-full px-4 py-4 rounded-2xl text-white font-mono text-lg font-bold tracking-wider placeholder-slate-500 focus:border-cyan-400"
+                className="glass-input w-full px-4 py-3.5 rounded-2xl text-white font-mono text-base font-semibold tracking-wider placeholder:text-white/40"
               />
             </div>
 
             <button
               type="submit"
-              className={`w-full py-4 rounded-2xl text-white font-black text-base shadow-xl spring-press ${
-                scanMode === "ENTRY"
-                  ? "btn-liquid-primary shadow-cyan-600/30"
-                  : "bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 shadow-amber-600/30"
-              }`}
+              className="btn-liquid-primary w-full py-3.5 rounded-2xl text-white font-semibold text-base spring-press"
             >
               {scanMode === "ENTRY" ? "Validate & Permit Entry" : "Validate & Record Exit"}
             </button>
@@ -586,24 +564,24 @@ export default function GatekeeperPage() {
 
       {/* RAPID DELIVERY ENTRY SCREEN */}
       {activeTab === "DELIVERY" && (
-        <div className="glass-floating rounded-3xl p-6 space-y-6 text-left animate-in fade-in zoom-in-95 duration-200">
+        <div className="glass-floating rounded-3xl p-6 space-y-6 text-left animate-in fade-in duration-200">
           <button
             onClick={() => setActiveTab("HOME")}
-            className="text-xs font-bold text-slate-400 hover:text-white flex items-center gap-1.5 spring-press"
+            className="text-xs font-semibold text-white/70 hover:text-white flex items-center gap-1.5 spring-press"
           >
-            <ArrowLeft className="w-4 h-4" /> Back to Main Menu
+            <ArrowLeft className="w-4 h-4 text-cyan-400" /> Back to Main Menu
           </button>
 
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-black text-white flex items-center gap-2.5">
-              <Truck className="w-6 h-6 text-blue-400" />
+            <h2 className="text-xl font-semibold text-white tracking-tight flex items-center gap-2.5">
+              <Truck className="w-6 h-6 text-cyan-400" />
               <span>Rapid Delivery Entry</span>
             </h2>
           </div>
 
           {deliveryMessage.text && (
             <div
-              className={`p-4 rounded-2xl border text-sm font-bold flex items-center gap-3 animate-in fade-in zoom-in-95 duration-200 ${
+              className={`p-4 rounded-2xl border text-sm font-semibold flex items-center gap-3 animate-in fade-in duration-200 ${
                 deliveryMessage.type === "success"
                   ? "glass-badge-emerald"
                   : "glass-badge-ruby"
@@ -617,44 +595,44 @@ export default function GatekeeperPage() {
           <form onSubmit={handleDeliverySubmit} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Company Name *</label>
+                <label className="text-xs font-medium text-white/80 uppercase tracking-wider">Company Name *</label>
                 <input
                   type="text"
                   required
                   placeholder="Amazon, Zomato, Swiggy, Flipkart..."
                   value={deliveryForm.companyName}
                   onChange={(e) => setDeliveryForm({ ...deliveryForm, companyName: e.target.value })}
-                  className="glass-input w-full px-4 py-3 rounded-2xl text-white placeholder-slate-500 text-sm focus:border-cyan-400"
+                  className="glass-input w-full px-4 py-3 rounded-2xl text-white text-sm"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Agent Name *</label>
+                <label className="text-xs font-medium text-white/80 uppercase tracking-wider">Agent Name *</label>
                 <input
                   type="text"
                   required
                   placeholder="Delivery agent name"
                   value={deliveryForm.personName}
                   onChange={(e) => setDeliveryForm({ ...deliveryForm, personName: e.target.value })}
-                  className="glass-input w-full px-4 py-3 rounded-2xl text-white placeholder-slate-500 text-sm focus:border-cyan-400"
+                  className="glass-input w-full px-4 py-3 rounded-2xl text-white text-sm"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300">Mobile Number (Optional)</label>
+              <label className="text-xs font-medium text-white/80 uppercase tracking-wider">Mobile Number (Optional)</label>
               <input
                 type="tel"
                 placeholder="10-digit mobile number"
                 value={deliveryForm.phone}
                 onChange={(e) => setDeliveryForm({ ...deliveryForm, phone: e.target.value })}
-                className="glass-input w-full px-4 py-3 rounded-2xl text-white placeholder-slate-500 text-sm focus:border-cyan-400"
+                className="glass-input w-full px-4 py-3 rounded-2xl text-white text-sm"
               />
             </div>
 
             {/* Destination Builder Box with Interactive Frosted Chips */}
             <div className="p-4 rounded-2xl glass-sheet space-y-3">
-              <label className="text-xs font-bold text-cyan-400 uppercase tracking-wider block">Add Destination Flat(s) *</label>
+              <label className="text-xs font-semibold text-cyan-300 uppercase tracking-wider block">Add Destination Flat(s) *</label>
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
@@ -663,7 +641,7 @@ export default function GatekeeperPage() {
                     placeholder="Wing (A/B)"
                     value={deliveryForm.wing}
                     onChange={(e) => setDeliveryForm({ ...deliveryForm, wing: e.target.value.toUpperCase() })}
-                    className="glass-input w-full px-3 py-2.5 rounded-xl text-white text-sm placeholder-slate-500 focus:border-cyan-400 uppercase"
+                    className="glass-input w-full px-3 py-2.5 rounded-xl text-white text-sm uppercase"
                   />
                 </div>
                 <div>
@@ -672,13 +650,13 @@ export default function GatekeeperPage() {
                     placeholder="Flat # (101)"
                     value={deliveryForm.flatNumber}
                     onChange={(e) => setDeliveryForm({ ...deliveryForm, flatNumber: e.target.value })}
-                    className="glass-input w-full px-3 py-2.5 rounded-xl text-white text-sm placeholder-slate-500 focus:border-cyan-400"
+                    className="glass-input w-full px-3 py-2.5 rounded-xl text-white text-sm"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={handleAddDestination}
-                  className="btn-liquid-primary py-2.5 px-3 rounded-xl text-white font-bold text-xs flex items-center justify-center gap-1 spring-press"
+                  className="btn-liquid-secondary py-2.5 px-3 rounded-xl text-white font-semibold text-xs flex items-center justify-center gap-1 spring-press"
                 >
                   <Plus className="w-4 h-4" /> Add
                 </button>
@@ -686,12 +664,12 @@ export default function GatekeeperPage() {
 
               {selectedDestinations.length > 0 && (
                 <div className="pt-2 space-y-2">
-                  <span className="text-[11px] text-slate-400 font-medium">Selected Destinations ({selectedDestinations.length}):</span>
+                  <span className="text-[11px] text-white/60 font-medium">Selected Destinations ({selectedDestinations.length}):</span>
                   <div className="flex flex-wrap gap-2">
                     {selectedDestinations.map((dest, idx) => (
                       <span
                         key={idx}
-                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full glass-badge-cyan text-xs font-bold animate-in fade-in zoom-in-95 duration-150"
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full glass-badge-cyan text-xs font-semibold animate-in fade-in duration-150"
                       >
                         {dest}
                         <button
@@ -711,7 +689,7 @@ export default function GatekeeperPage() {
             <button
               type="submit"
               disabled={submittingDelivery}
-              className="btn-liquid-primary w-full py-4 rounded-2xl text-white font-black text-base shadow-xl shadow-blue-600/30 flex items-center justify-center gap-2 spring-press disabled:opacity-50"
+              className="btn-liquid-primary w-full py-3.5 rounded-2xl text-white font-semibold text-base flex items-center justify-center gap-2 spring-press disabled:opacity-50"
             >
               {submittingDelivery ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : "Record Delivery Entry"}
             </button>
@@ -721,53 +699,53 @@ export default function GatekeeperPage() {
 
       {/* TODAY'S ACTIVITY LOGS */}
       {activeTab === "LOGS" && (
-        <div className="glass-floating rounded-3xl p-6 space-y-6 text-left animate-in fade-in zoom-in-95 duration-200">
+        <div className="glass-floating rounded-3xl p-6 space-y-6 text-left animate-in fade-in duration-200">
           <button
             onClick={() => setActiveTab("HOME")}
-            className="text-xs font-bold text-slate-400 hover:text-white flex items-center gap-1.5 spring-press"
+            className="text-xs font-semibold text-white/70 hover:text-white flex items-center gap-1.5 spring-press"
           >
-            <ArrowLeft className="w-4 h-4" /> Back to Main Menu
+            <ArrowLeft className="w-4 h-4 text-cyan-400" /> Back to Main Menu
           </button>
 
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-black text-white flex items-center gap-2.5">
+            <h2 className="text-xl font-semibold text-white tracking-tight flex items-center gap-2.5">
               <ListFilter className="w-6 h-6 text-cyan-400" />
               <span>Today's Movements Log</span>
             </h2>
             <button
               onClick={fetchTodayLogs}
-              className="text-xs font-bold text-cyan-400 hover:underline"
+              className="text-xs font-semibold text-cyan-400 hover:underline"
             >
               Refresh
             </button>
           </div>
 
-          <div className="space-y-3">
+          <div className="divide-y divide-white/5 rounded-2xl border border-white/5 overflow-hidden">
             {loadingLogs ? (
-              <div className="py-12 text-center text-slate-400 text-sm">Loading today's logs...</div>
+              <div className="py-12 text-center text-white/60 text-sm">Loading today's logs...</div>
             ) : todayLogs.length === 0 ? (
-              <div className="py-12 text-center text-slate-400 text-sm">No gate entry movements logged yet today.</div>
+              <div className="py-12 text-center text-white/60 text-sm">No gate entry movements logged yet today.</div>
             ) : (
               todayLogs.map((log) => (
-                <div key={log.id} className="glass-plank p-4 rounded-2xl flex items-center justify-between text-xs">
+                <div key={log.id} className="p-4 flex items-center justify-between text-xs hover:bg-white/[0.02] transition-colors">
                   <div className="flex items-center gap-3">
-                    <span className={`px-2.5 py-1 rounded-full font-black text-[10px] shrink-0 ${log.entry_type === "DELIVERY" ? "glass-badge-amber" : "glass-badge-cyan"}`}>
+                    <span className={`px-2.5 py-0.5 rounded-full font-medium text-[11px] shrink-0 ${log.entry_type === "DELIVERY" ? "glass-badge-amber" : "glass-badge-cyan"}`}>
                       {log.entry_type}
                     </span>
                     <div>
-                      <strong className="text-white text-sm block">{log.person_name}</strong>
-                      <p className="text-slate-400 text-xs mt-0.5">
-                        Dest: <strong className="text-cyan-300 font-mono">{Array.isArray(log.destinations) ? log.destinations.join(", ") : log.destinations}</strong>
+                      <strong className="text-white text-sm font-semibold block">{log.person_name}</strong>
+                      <p className="text-white/60 text-xs mt-0.5">
+                        Dest: <strong className="text-cyan-300 font-mono font-medium">{Array.isArray(log.destinations) ? log.destinations.join(", ") : log.destinations}</strong>
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <span className="font-mono text-slate-400 text-xs">
+                    <span className="font-mono text-white/60 text-xs">
                       {new Date(log.entry_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                     </span>
-                    <span className={`font-black text-xs px-2.5 py-0.5 rounded-full ${log.status === "INSIDE" ? "glass-badge-emerald" : "text-slate-500 bg-slate-800"}`}>
-                      {log.status}
+                    <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${log.status === "INSIDE" ? "glass-badge-emerald" : "glass-badge-indigo"}`}>
+                      {log.status === "INSIDE" ? "ENTERED" : "EXITED"}
                     </span>
                   </div>
                 </div>

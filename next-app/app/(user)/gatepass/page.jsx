@@ -252,7 +252,7 @@ export default function UserGatepassPage() {
               <div className="w-16 h-16 rounded-3xl bg-cyan-500/10 border border-cyan-400/30 flex items-center justify-center text-cyan-400 mx-auto">
                 <QrCode className="w-8 h-8" />
               </div>
-              <p className="text-sm font-bold text-white">QR Gate Pass Preview</p>
+              <p className="text-sm font-bold text-white">Gatify Spatial Gate Pass Preview</p>
               <p className="text-xs text-slate-400 max-w-xs mx-auto">
                 Complete the gate pass form to render your visitor security credential.
               </p>

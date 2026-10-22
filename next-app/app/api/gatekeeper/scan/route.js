@@ -92,6 +92,13 @@ export async function POST(req) {
           .update({ status: 'USED' })
           .eq('id', pass.id);
 
+        // Fetch updated real-time headcount
+        const { count: currentlyInside } = await supabaseServer
+          .from('entry_logs')
+          .select('id', { count: 'exact', head: true })
+          .eq('organization_id', authUser.organizationId)
+          .eq('status', 'INSIDE');
+
         return NextResponse.json({
           success: true,
           statusCode: 'EXIT_RECORDED',
@@ -104,6 +111,8 @@ export async function POST(req) {
             status: 'EXITED',
           },
           entryLog: updatedLog,
+          people_currently_inside: currentlyInside || 0,
+          currentlyInside: currentlyInside || 0,
         });
       }
 
@@ -259,6 +268,13 @@ export async function POST(req) {
       .select()
       .single();
 
+    // Fetch updated real-time headcount
+    const { count: currentlyInside } = await supabaseServer
+      .from('entry_logs')
+      .select('id', { count: 'exact', head: true })
+      .eq('organization_id', authUser.organizationId)
+      .eq('status', 'INSIDE');
+
     return NextResponse.json({
       success: true,
       statusCode: 'VERIFIED',
@@ -271,6 +287,8 @@ export async function POST(req) {
         status: 'VERIFIED',
       },
       entryLog,
+      people_currently_inside: currentlyInside || 0,
+      currentlyInside: currentlyInside || 0,
     });
   } catch (error) {
     const status = error.status || 500;

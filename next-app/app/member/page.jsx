@@ -179,7 +179,7 @@ export default function MemberPage() {
     // Gatify Header Branding
     ctx.fillStyle = "#06B6D4";
     ctx.font = "bold 14px sans-serif";
-    ctx.fillText("GATIFY DIGITAL GATE PASS", 135, 55);
+    ctx.fillText("GATIFY SPATIAL GATE PASS", 135, 55);
 
     ctx.fillStyle = "#FFFFFF";
     ctx.font = "extrabold 22px sans-serif";
@@ -247,7 +247,7 @@ export default function MemberPage() {
         </div>
         <button
           onClick={handleLogout}
-          className="px-3 py-2 rounded-xl border border-[var(--border)] text-sm font-medium flex items-center gap-1.5 hover:text-rose-400"
+          className="btn-liquid-secondary px-3.5 py-2 rounded-xl text-xs font-bold text-rose-400 hover:bg-rose-500/20 hover:border-rose-500/50 flex items-center gap-1.5 shadow-md"
         >
           <LogOut className="w-4 h-4" /> <span className="hidden sm:inline">Sign out</span>
         </button>
@@ -256,8 +256,10 @@ export default function MemberPage() {
       <div className="ui-tab-bar">
         <button
           onClick={() => setActiveTab("CREATE")}
-          className={`flex-1 min-w-[140px] px-4 py-2.5 rounded-xl text-sm font-semibold ${
-            activeTab === "CREATE" ? "btn-liquid-primary" : "text-[var(--text-secondary)]"
+          className={`flex-1 min-w-[140px] px-4 py-2 rounded-xl text-sm transition-all ${
+            activeTab === "CREATE"
+              ? "bg-white/10 text-white font-medium border border-white/20 shadow-sm"
+              : "text-white/60 hover:text-white transition-colors"
           }`}
         >
           New guest pass
@@ -267,8 +269,10 @@ export default function MemberPage() {
             setActiveTab("HISTORY");
             fetchMyPasses();
           }}
-          className={`flex-1 min-w-[140px] px-4 py-2.5 rounded-xl text-sm font-semibold ${
-            activeTab === "HISTORY" ? "btn-liquid-primary" : "text-[var(--text-secondary)]"
+          className={`flex-1 min-w-[140px] px-4 py-2 rounded-xl text-sm transition-all ${
+            activeTab === "HISTORY"
+              ? "bg-white/10 text-white font-medium border border-white/20 shadow-sm"
+              : "text-white/60 hover:text-white transition-colors"
           }`}
         >
           History ({passes.length})
@@ -277,27 +281,34 @@ export default function MemberPage() {
 
       {/* GENERATE GUEST PASS TAB */}
       {activeTab === "CREATE" && (
-        <div className="glass-elevated rounded-2xl p-5 sm:p-7 space-y-6">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <QrCode className="w-5 h-5 text-teal-400" />
-            <span>Create visitor pass</span>
-          </h2>
+        <div className="glass-elevated liquid-glass-surface rounded-3xl p-5 sm:p-7 space-y-5 animate-in fade-in duration-200">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-white tracking-tight flex items-center gap-2">
+              <QrCode className="w-5 h-5 text-cyan-400" />
+              <span>Create visitor pass</span>
+            </h2>
+            <span className="text-xs text-white/60">Instant cryptographic credential</span>
+          </div>
 
           {error && (
-            <div className="p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-bold">
+            <div className="p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-semibold">
               {error}
             </div>
           )}
 
           {/* Generated Reflective Credential Badge */}
           {createdPass && (
-            <div className="glass-qr-badge rounded-3xl p-6 sm:p-8 text-center space-y-5 animate-in fade-in zoom-in-95 duration-300">
-              <div className="w-12 h-12 rounded-2xl bg-cyan-500/20 border border-cyan-400/40 mx-auto flex items-center justify-center text-cyan-300 shadow-md">
+            <div className="glass-qr-badge liquid-glass-surface rounded-3xl p-6 sm:p-8 text-center space-y-5 animate-in fade-in duration-300 border border-white/20 shadow-2xl">
+              <div className="flex items-center justify-center gap-2 text-cyan-300 text-xs font-semibold uppercase tracking-widest">
+                <Sparkles className="w-4 h-4 animate-pulse text-cyan-400" />
+                <span>GATIFY SPATIAL GATE PASS</span>
+              </div>
+              <div className="w-12 h-12 rounded-2xl bg-cyan-500/15 border border-cyan-400/30 mx-auto flex items-center justify-center text-cyan-300 shadow-md">
                 <CheckCircle2 className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-2xl font-black text-white tracking-tight">Guest Pass Active!</h3>
-                <p className="text-xs text-slate-300 mt-1">Present this QR Code credential at the security gate for automated verification:</p>
+                <h3 className="text-2xl font-bold text-white tracking-tight">Guest Pass Active</h3>
+                <p className="text-xs text-white/70 mt-1">Present this QR Code credential at the security gate for automated verification:</p>
               </div>
               
               {/* REAL SCANNABLE QR CODE IMAGE */}
@@ -306,17 +317,17 @@ export default function MemberPage() {
                   <img
                     src={qrDataUrl}
                     alt={`QR Code for ${createdPass.pass_code}`}
-                    className="w-60 h-60 mx-auto rounded-3xl border-4 border-cyan-400/80 bg-white p-3 shadow-2xl shadow-cyan-500/20"
+                    className="w-56 h-56 mx-auto rounded-2xl border-2 border-white/20 bg-white p-3 shadow-2xl"
                   />
                 </div>
               )}
 
-              <div className="p-4 rounded-2xl glass-pill inline-flex items-center gap-3">
-                <span className="text-2xl font-black text-cyan-300 font-mono tracking-widest">{createdPass.pass_code}</span>
+              <div className="p-3 px-5 rounded-2xl glass-pill inline-flex items-center gap-3">
+                <span className="text-xl font-bold text-white font-mono tracking-widest">{createdPass.pass_code}</span>
                 <button
                   type="button"
                   onClick={() => handleCopyPassCode(createdPass.pass_code)}
-                  className="p-2 rounded-xl hover:bg-white/10 text-cyan-400 spring-press transition-colors"
+                  className="p-1.5 rounded-lg hover:bg-white/10 text-cyan-300 spring-press transition-colors"
                   title="Copy Token"
                 >
                   <Copy className="w-4 h-4" />
@@ -324,10 +335,10 @@ export default function MemberPage() {
               </div>
 
               {copiedToken && (
-                <span className="block text-xs font-bold text-emerald-400 animate-pulse">Token copied to clipboard!</span>
+                <span className="block text-xs font-semibold text-emerald-400 animate-pulse">Token copied to clipboard!</span>
               )}
 
-              <div className="text-xs text-slate-400 space-y-1">
+              <div className="text-xs text-white/70 space-y-1">
                 <p>Guest Name: <strong className="text-white text-sm">{createdPass.guest_name}</strong></p>
                 <p>Valid Until: <strong className="text-cyan-300">{formatLocalPassDate(createdPass.valid_until)}</strong></p>
               </div>
@@ -336,7 +347,7 @@ export default function MemberPage() {
                 <button
                   type="button"
                   onClick={() => handleDownloadPassObj(createdPass)}
-                  className="btn-liquid-primary px-6 py-3.5 rounded-2xl text-white font-extrabold text-sm flex items-center gap-2 shadow-xl shadow-cyan-600/30 spring-press"
+                  className="btn-liquid-primary px-6 py-3 rounded-2xl text-white font-semibold text-sm flex items-center gap-2 spring-press"
                 >
                   <Download className="w-4 h-4" />
                   <span>Download Gatify QR Pass Card</span>
@@ -347,36 +358,36 @@ export default function MemberPage() {
 
           <form onSubmit={handleCreatePass} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300">Guest Full Name *</label>
+              <label className="text-xs font-medium text-white/80 uppercase tracking-wider">Guest Full Name *</label>
               <input
                 type="text"
                 required
                 placeholder="e.g. Rahul Sharma"
                 value={form.guestName}
                 onChange={(e) => setForm({ ...form, guestName: e.target.value })}
-                className="glass-input w-full px-4 py-3 rounded-2xl text-white placeholder-slate-500 text-sm focus:border-cyan-400"
+                className="glass-input w-full px-4 py-3 rounded-2xl text-white text-sm"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300">Guest Mobile Number (Optional)</label>
+              <label className="text-xs font-medium text-white/80 uppercase tracking-wider">Guest Mobile Number (Optional)</label>
               <input
                 type="tel"
                 placeholder="10-digit mobile number"
                 value={form.guestPhone}
                 onChange={(e) => setForm({ ...form, guestPhone: e.target.value })}
-                className="glass-input w-full px-4 py-3 rounded-2xl text-white placeholder-slate-500 text-sm focus:border-cyan-400"
+                className="glass-input w-full px-4 py-3 rounded-2xl text-white text-sm"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Destination (Flat / Unit) *</label>
+                <label className="text-xs font-medium text-white/80 uppercase tracking-wider">Destination (Flat / Unit) *</label>
                 <select
                   required
                   value={form.destinationId}
                   onChange={(e) => setForm({ ...form, destinationId: e.target.value })}
-                  className="glass-input w-full px-4 py-3 rounded-2xl text-white text-sm focus:border-cyan-400"
+                  className="glass-input w-full px-4 py-3 rounded-2xl text-white text-sm font-medium"
                 >
                   <option value="" className="bg-slate-900 text-white">Select Destination...</option>
                   {destinations.map((d) => (
@@ -386,22 +397,22 @@ export default function MemberPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Valid Date *</label>
+                <label className="text-xs font-medium text-white/80 uppercase tracking-wider">Valid Date *</label>
                 <input
                   type="date"
                   required
                   value={form.validDate}
                   onChange={(e) => setForm({ ...form, validDate: e.target.value })}
-                  className="glass-input w-full px-4 py-3 rounded-2xl text-white text-sm focus:border-cyan-400"
+                  className="glass-input w-full px-4 py-3 rounded-2xl text-white text-sm font-medium"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Validity Duration *</label>
+                <label className="text-xs font-medium text-white/80 uppercase tracking-wider">Validity Duration *</label>
                 <select
                   value={form.durationHours}
                   onChange={(e) => setForm({ ...form, durationHours: parseInt(e.target.value, 10) })}
-                  className="glass-input w-full px-4 py-3 rounded-2xl text-white text-sm focus:border-cyan-400"
+                  className="glass-input w-full px-4 py-3 rounded-2xl text-white text-sm font-medium"
                 >
                   <option value={4} className="bg-slate-900 text-white">4 Hours</option>
                   <option value={8} className="bg-slate-900 text-white">8 Hours</option>
@@ -414,7 +425,7 @@ export default function MemberPage() {
             <button
               type="submit"
               disabled={loading}
-              className="btn-liquid-primary w-full py-4 rounded-2xl text-white font-extrabold text-base shadow-xl shadow-cyan-600/30 spring-press disabled:opacity-50 mt-2"
+              className="btn-liquid-primary w-full py-3.5 rounded-2xl text-white font-semibold text-base spring-press disabled:opacity-50 mt-2"
             >
               {loading ? "Generating Credential..." : "Generate Guest QR Pass"}
             </button>
@@ -424,15 +435,15 @@ export default function MemberPage() {
 
       {/* GUEST HISTORY TAB */}
       {activeTab === "HISTORY" && (
-        <div className="glass-floating rounded-3xl p-6 sm:p-8 space-y-4 animate-in fade-in zoom-in-95 duration-200">
-          <h2 className="text-lg font-black text-white flex items-center gap-2">
+        <div className="glass-floating rounded-3xl p-6 sm:p-8 space-y-4 animate-in fade-in duration-200">
+          <h2 className="text-lg font-semibold text-white tracking-tight flex items-center gap-2">
             <History className="w-5 h-5 text-cyan-400" />
             <span>My Guest Pass History</span>
           </h2>
 
           <div className="space-y-3 pt-2">
             {passes.length === 0 ? (
-              <div className="py-12 text-center text-slate-400 text-sm">No guest passes generated yet.</div>
+              <div className="py-12 text-center text-white/50 text-sm">No guest passes generated yet.</div>
             ) : (
               passes.map((pass) => {
                 const now = new Date();
@@ -458,13 +469,13 @@ export default function MemberPage() {
                 return (
                   <div key={pass.id} className="glass-plank p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                     <div>
-                      <strong className="text-white text-sm font-bold block">{pass.guest_name}</strong>
-                      <span className="text-slate-400 font-mono text-[11px] block mt-0.5">Code: {pass.pass_code}</span>
-                      <span className="text-slate-500 text-[10px]">Valid Until: {formatLocalPassDate(pass.valid_until)}</span>
+                      <strong className="text-white text-sm font-semibold block">{pass.guest_name}</strong>
+                      <span className="text-cyan-300 font-mono text-xs font-medium block mt-0.5">Code: {pass.pass_code}</span>
+                      <span className="text-white/60 text-xs block mt-0.5">Valid Until: {formatLocalPassDate(pass.valid_until)}</span>
                     </div>
 
                     <div className="flex items-center gap-2.5 shrink-0">
-                      <span className={`px-2.5 py-1 rounded-full font-black text-[10px] ${
+                      <span className={`px-2.5 py-0.5 rounded-full font-medium text-[11px] ${
                         computedStatus === 'ACTIVE' ? 'glass-badge-cyan' :
                         computedStatus === 'NOT YET VALID' ? 'glass-badge-amber' :
                         computedStatus === 'USED' ? 'glass-badge-emerald' :
@@ -476,7 +487,7 @@ export default function MemberPage() {
                       {canDownload && (
                         <button
                           onClick={() => handleDownloadPassObj(pass)}
-                          className="btn-liquid-secondary px-3 py-1.5 rounded-xl text-white font-bold text-[11px] flex items-center gap-1.5 spring-press"
+                          className="btn-liquid-secondary px-3 py-1.5 rounded-xl text-white font-medium text-xs flex items-center gap-1.5 spring-press"
                         >
                           <Download className="w-3.5 h-3.5 text-cyan-400" /> Download
                         </button>

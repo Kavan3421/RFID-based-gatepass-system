@@ -58,6 +58,7 @@ export async function GET(req) {
         guestsToday: guestsToday || 0,
         deliveriesToday: deliveriesToday || 0,
         currentlyInside: currentlyInside || 0,
+        people_currently_inside: currentlyInside || 0,
         exitedToday: exitedToday || 0,
       },
       organization: org || {},

@@ -71,60 +71,60 @@ export default function UserContactPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-8">
       <div className="text-center space-y-2">
-        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-slate-100">Contact & Support</h1>
-        <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm">
+        <h1 className="text-3xl font-bold tracking-tight text-white">Contact & Support</h1>
+        <p className="text-white/70 text-xs sm:text-sm">
           Have an issue with your RFID tag or vehicle entry? Send a direct message to system admins.
         </p>
       </div>
 
-      <div className="glass-panel rounded-3xl p-6 sm:p-8 space-y-6">
+      <div className="glass-floating rounded-3xl p-6 sm:p-8 space-y-6">
         {error && (
-          <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs flex items-center gap-2">
+          <div className="p-3.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2 font-medium">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
         {success && (
-          <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center gap-2">
+          <div className="p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-xs flex items-center gap-2 font-medium">
             <CheckCircle2 className="w-4 h-4 shrink-0" />
             <span>{success}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 text-left">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Your Name</label>
+            <label className="block text-xs font-medium uppercase tracking-wider text-white/70 mb-1.5">Your Name</label>
             <div className="relative">
-              <User className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 top-3.5" />
+              <User className="w-4 h-4 text-cyan-400 absolute left-3.5 top-3.5" />
               <input
                 type="text"
                 name="name"
                 required
                 value={formData.name}
                 onChange={handleChange}
-                className="input-field w-full pl-10 text-xs"
+                className="glass-input w-full pl-10 pr-4 py-3 rounded-xl text-xs text-white"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Email Address</label>
+            <label className="block text-xs font-medium uppercase tracking-wider text-white/70 mb-1.5">Email Address</label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 top-3.5" />
+              <Mail className="w-4 h-4 text-cyan-400 absolute left-3.5 top-3.5" />
               <input
                 type="email"
                 name="email"
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="input-field w-full pl-10 text-xs"
+                className="glass-input w-full pl-10 pr-4 py-3 rounded-xl text-xs text-white"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Message / Inquiry</label>
+            <label className="block text-xs font-medium uppercase tracking-wider text-white/70 mb-1.5">Message / Inquiry</label>
             <textarea
               name="message"
               required
@@ -132,14 +132,14 @@ export default function UserContactPage() {
               placeholder="Describe your issue or request here..."
               value={formData.message}
               onChange={handleChange}
-              className="input-field w-full p-3 text-xs"
+              className="glass-input w-full p-3.5 rounded-xl text-xs text-white"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30 transition-all"
+            className="btn-liquid-primary liquid-touch-spring w-full py-3.5 rounded-xl text-white font-semibold text-xs flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
